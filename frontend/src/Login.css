@@ -48,7 +48,49 @@
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.google-btn:hover {
+.google-btn:hover:not(:disabled) {
   border-color: #9b6e5a;
   box-shadow: 0 2px 8px rgba(155, 110, 90, 0.2);
+}
+
+.google-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dev-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.dev-login-form input,
+.dev-login-form select {
+  padding: 0.65rem 0.9rem;
+  border: 1.5px solid #e0d5cf;
+  border-radius: 7px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: #2c2c2c;
+  background: #fff;
+  transition: border-color 0.2s;
+}
+
+.dev-login-form input:focus,
+.dev-login-form select:focus {
+  outline: none;
+  border-color: #9b6e5a;
+}
+
+.login-error {
+  color: #c0392b;
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.dev-notice {
+  font-size: 0.78rem;
+  color: #aaa;
+  margin-top: 0.5rem;
 }
