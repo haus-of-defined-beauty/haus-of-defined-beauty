@@ -1,0 +1,71 @@
+.booking-list h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  color: #2c2c2c;
+}
+
+.booking-list table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(44, 44, 44, 0.07);
+}
+
+.booking-list th {
+  background: #2c2c2c;
+  color: #fff;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.booking-list td {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid #f0e6e0;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.booking-list tr:last-child td {
+  border-bottom: none;
+}
+
+.booking-list tr:hover td {
+  background: #faf7f5;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.btn-cancel {
+  padding: 0.35rem 0.8rem;
+  background: #fff;
+  color: #c0392b;
+  border: 1.5px solid #c0392b;
+  border-radius: 5px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-cancel:hover {
+  background: #fdecea;
+}
+
+.empty-msg {
+  color: #888;
+  font-size: 0.95rem;
+}
