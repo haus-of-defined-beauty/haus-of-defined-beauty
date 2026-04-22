@@ -28,35 +28,45 @@ function Login() {
 
   return (
     <div className="login-container">
-      <div className="login-card">
-        <h1>Haus of Defined Beauty</h1>
-        <p className="tagline">Where Beauty Is Defined</p>
+      <div className="login-brand">
+        <div className="brand-content">
+          <div className="brand-monogram">HDB</div>
+          <div className="brand-name">Haus of Defined Beauty</div>
+          <div className="brand-tagline">Where Beauty Is Defined</div>
+        </div>
+      </div>
 
-        <form className="dev-login-form" onSubmit={handleDevLogin}>
-          <input
-            type="email"
-            placeholder="Email address"
-            value={form.email}
-            onChange={e => setForm({ ...form, email: e.target.value })}
-            required
-          />
-          <input
-            type="text"
-            placeholder="Your name"
-            value={form.name}
-            onChange={e => setForm({ ...form, name: e.target.value })}
-          />
-          <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
-            <option value="customer">Customer</option>
-            <option value="admin">Admin</option>
-          </select>
-          {error && <p className="login-error">{error}</p>}
-          <button type="submit" className="google-btn" disabled={loading}>
-            {loading ? 'Signing in…' : 'Sign in (Dev Mode)'}
-          </button>
-        </form>
+      <div className="login-form-side">
+        <div className="login-card">
+          <h2>Welcome</h2>
+          <p className="login-subtitle">Sign in to your account to continue</p>
 
-        <p className="dev-notice">Google OAuth will replace this form in production.</p>
+          <form className="dev-login-form" onSubmit={handleDevLogin}>
+            <input
+              type="email"
+              placeholder="Email address"
+              value={form.email}
+              onChange={e => setForm({ ...form, email: e.target.value })}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Your name"
+              value={form.name}
+              onChange={e => setForm({ ...form, name: e.target.value })}
+            />
+            <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
+              <option value="customer">Customer</option>
+              <option value="admin">Admin</option>
+            </select>
+            {error && <p className="login-error">{error}</p>}
+            <button type="submit" className="google-btn" disabled={loading}>
+              {loading ? 'Signing in…' : 'Sign In'}
+            </button>
+          </form>
+
+          <p className="dev-notice">Google OAuth will replace this form in production.</p>
+        </div>
       </div>
     </div>
   );

@@ -1,67 +1,74 @@
 .dashboard {
   min-height: 100vh;
-  background: #faf7f5;
+  background: #faf8f5;
   display: flex;
   flex-direction: column;
 }
 
 .dashboard-header {
-  background: #2c2c2c;
+  background: #1c1c1c;
   color: #fff;
-  padding: 1rem 2rem;
+  padding: 1.1rem 2.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  border-bottom: 1px solid rgba(196, 168, 130, 0.2);
 }
 
 .dashboard-header h2 {
-  font-size: 1.3rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #fff;
 }
 
 .role-badge {
-  background: #9b6e5a;
-  color: #fff;
-  padding: 0.25rem 0.75rem;
+  background: transparent;
+  color: #c4a882;
+  border: 1px solid #c4a882;
+  padding: 0.25rem 0.9rem;
   border-radius: 20px;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.12em;
 }
 
 .dashboard-nav {
   background: #fff;
-  border-bottom: 1px solid #e0d5cf;
+  border-bottom: 1px solid #ede5de;
   display: flex;
-  padding: 0 2rem;
-  gap: 0.5rem;
+  padding: 0 2.5rem;
+  gap: 0;
 }
 
 .nav-tab {
-  padding: 1rem 1.25rem;
+  padding: 1.1rem 1.5rem;
   background: none;
   border: none;
-  border-bottom: 3px solid transparent;
-  font-size: 0.95rem;
+  border-bottom: 2px solid transparent;
+  font-size: 0.85rem;
   font-weight: 500;
-  color: #666;
+  font-family: 'Inter', sans-serif;
+  color: #999;
   cursor: pointer;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   transition: color 0.2s, border-color 0.2s;
 }
 
 .nav-tab:hover {
-  color: #2c2c2c;
+  color: #1c1c1c;
 }
 
 .nav-tab.active {
-  color: #9b6e5a;
-  border-bottom-color: #9b6e5a;
+  color: #1c1c1c;
+  border-bottom-color: #c4a882;
   font-weight: 600;
 }
 
 .dashboard-content {
   flex: 1;
-  padding: 2rem;
+  padding: 2.5rem;
 }

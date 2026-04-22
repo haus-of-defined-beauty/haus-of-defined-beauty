@@ -1,71 +1,83 @@
 .booking-list h3 {
-  font-size: 1.3rem;
+  font-size: 1.6rem;
   font-weight: 700;
-  margin-bottom: 1.25rem;
-  color: #2c2c2c;
+  margin-bottom: 0.4rem;
+  color: #1c1c1c;
+}
+
+.booking-list .section-sub {
+  font-size: 0.85rem;
+  color: #aaa;
+  margin-bottom: 2rem;
 }
 
 .booking-list table {
   width: 100%;
   border-collapse: collapse;
   background: #fff;
-  border-radius: 10px;
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(44, 44, 44, 0.07);
+  border: 1px solid #ede5de;
 }
 
 .booking-list th {
-  background: #2c2c2c;
-  color: #fff;
-  padding: 0.75rem 1rem;
+  background: #1c1c1c;
+  color: #c4a882;
+  padding: 0.9rem 1.25rem;
   text-align: left;
-  font-size: 0.85rem;
+  font-size: 0.72rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
 }
 
 .booking-list td {
-  padding: 0.8rem 1rem;
-  border-bottom: 1px solid #f0e6e0;
-  font-size: 0.95rem;
-  color: #333;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #f5f0eb;
+  font-size: 0.9rem;
+  color: #444;
 }
 
 .booking-list tr:last-child td {
   border-bottom: none;
 }
 
-.booking-list tr:hover td {
-  background: #faf7f5;
+.booking-list tbody tr:hover td {
+  background: #faf8f5;
 }
 
 .status-badge {
   display: inline-block;
-  padding: 0.2rem 0.65rem;
-  border-radius: 12px;
+  padding: 0.22rem 0.75rem;
+  border-radius: 20px;
   color: #fff;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  text-transform: capitalize;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .btn-cancel {
-  padding: 0.35rem 0.8rem;
-  background: #fff;
-  color: #c0392b;
-  border: 1.5px solid #c0392b;
-  border-radius: 5px;
-  font-size: 0.85rem;
+  padding: 0.35rem 0.9rem;
+  background: transparent;
+  color: #b94040;
+  border: 1px solid #b94040;
+  border-radius: 4px;
+  font-size: 0.75rem;
   font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .btn-cancel:hover {
-  background: #fdecea;
+  background: #fdf0f0;
 }
 
 .empty-msg {
-  color: #888;
-  font-size: 0.95rem;
+  color: #aaa;
+  font-size: 0.9rem;
+  padding: 2rem 0;
 }

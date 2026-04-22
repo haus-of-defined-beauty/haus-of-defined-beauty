@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -5,7 +7,13 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #faf7f5;
-  color: #2c2c2c;
+  font-family: 'Inter', sans-serif;
+  background-color: #faf8f5;
+  color: #1c1c1c;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Playfair Display', serif;
+  letter-spacing: 0.01em;
 }
