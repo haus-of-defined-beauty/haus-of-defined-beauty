@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './BookingWizard.css';
 
-const STEPS = ['SELECT SERVICES', 'PERSONAL INFO', 'CONFIRMATION', 'PAYMENT'];
+const STEPS = ['SELECT SERVICES', 'CONFIRMATION', 'PAYMENT'];
 const BOOKING_FEE = 200;
 
 const MOCK_SERVICES = {
@@ -68,7 +68,7 @@ export default function BookingWizard() {
   const [activeService, setActiveService] = useState(null);
   const [weekStart, setWeekStart] = useState(getMondayOf(new Date()));
   const [selectedDay, setSelectedDay] = useState(new Date());
-  const [info, setInfo] = useState({ name: '', surname: '', phone: '' });
+
 
   const weekDays = getWeekDays(weekStart);
 
@@ -211,39 +211,6 @@ export default function BookingWizard() {
     );
   }
 
-  function Step2() {
-    return (
-      <div className="bw-step2">
-        <div className="bw-step2-left">
-          <h2 className="bw-step2-title">Personal Information</h2>
-          {[['Name:', 'name'], ['Surname:', 'surname'], ['Mobile Number:', 'phone']].map(([label, key]) => (
-            <div key={key} className="bw-field">
-              <label className="bw-field-label">{label}</label>
-              <input className="bw-field-input" value={info[key]} onChange={e => setInfo(i => ({ ...i, [key]: e.target.value }))} />
-            </div>
-          ))}
-          <p className="bw-login-hint">Already have an account? <span className="bw-login-link">Log In</span></p>
-          <div className="bw-step-btns">
-            <button className="bw-btn-outline" onClick={() => navigate('/customer')}>Cancel Booking</button>
-            <button className="bw-btn-dark" onClick={() => setStep(2)}>Continue</button>
-          </div>
-        </div>
-        <div className="bw-step2-right">
-          <div className="bw-summary-card">
-            <h3 className="bw-summary-title">Your Booking:</h3>
-            {cart.map((item, i) => (
-              <div key={i} className="bw-summary-item">
-                <span className="bw-cart-name">{item.service.name}</span>
-                <span className="bw-dur"> - {fmt(item.service.duration)}</span>
-                <div className="bw-cart-dt">{item.date}, {item.time} - {item.endTime}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   function Step3() {
     return (
       <div className="bw-confirm-card">
@@ -260,7 +227,7 @@ export default function BookingWizard() {
         ))}
         <div className="bw-confirm-btns">
           <button className="bw-btn-outline" onClick={() => navigate('/customer')}>Cancel Booking</button>
-          <button className="bw-btn-dark" onClick={() => setStep(3)}>Confirm</button>
+          <button className="bw-btn-dark" onClick={() => setStep(2)}>Confirm</button>
         </div>
       </div>
     );
@@ -316,9 +283,8 @@ export default function BookingWizard() {
 
       <main className="bw-main">
         {step === 0 && <Step1 />}
-        {step === 1 && <Step2 />}
-        {step === 2 && <Step3 />}
-        {step === 3 && <Step4 />}
+        {step === 1 && <Step3 />}
+        {step === 2 && <Step4 />}
       </main>
     </div>
   );
