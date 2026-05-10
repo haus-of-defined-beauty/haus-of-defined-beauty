@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import BookingForm from './BookingForm';
+import { useNavigate } from 'react-router-dom';
 import BookingList from './BookingList';
 import ProfilePanel from './ProfilePanel';
 import './Customer.css';
@@ -7,11 +7,11 @@ import './Customer.css';
 const TABS = ['Book', 'My Bookings', 'Profile'];
 
 function CustomerDashboard() {
-  const [activeTab, setActiveTab] = useState('Book');
+  const [activeTab, setActiveTab] = useState('My Bookings');
+  const navigate = useNavigate();
 
   const renderTab = () => {
     switch (activeTab) {
-      case 'Book': return <BookingForm />;
       case 'My Bookings': return <BookingList />;
       case 'Profile': return <ProfilePanel />;
       default: return null;
@@ -29,7 +29,7 @@ function CustomerDashboard() {
           <button
             key={tab}
             className={`nav-tab ${activeTab === tab ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => tab === 'Book' ? navigate('/customer/book') : setActiveTab(tab)}
           >
             {tab}
           </button>
