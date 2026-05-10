@@ -1,10 +1,10 @@
 /* ── Page ── */
 .ac-page {
   min-height: 100vh;
-  background: #fff;
-  font-family: 'Inter', sans-serif;
   display: flex;
   flex-direction: column;
+  font-family: 'Inter', 'Georgia', sans-serif;
+  background: #fff;
 }
 
 /* ── Header ── */
@@ -17,287 +17,108 @@
   padding: 0.75rem 1.5rem;
   min-height: 72px;
 }
-.ac-header-left { display: flex; align-items: center; gap: 1rem; }
-
-.ac-hamburger {
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 1.3rem;
-  cursor: pointer;
-}
-
-.ac-logo-box {
-  border: 1px solid #fff;
-  padding: 0.25rem 0.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  line-height: 1.2;
-}
-.ac-logo-l1 { font-size: 0.55rem; font-weight: 700; letter-spacing: 0.07em; }
+.ac-header-left { display: flex; align-items: center; gap: 0.85rem; }
+.ac-hamburger { background: none; border: none; color: #fff; font-size: 1.3rem; cursor: pointer; padding: 0.2rem 0.4rem; }
+.ac-logo-box { border: 1px solid #fff; padding: 0.3rem 0.6rem; display: flex; flex-direction: column; align-items: center; line-height: 1.2; }
+.ac-logo-l1 { font-size: 0.55rem; font-weight: 700; letter-spacing: 0.08em; }
 .ac-logo-l2 { font-size: 0.9rem; font-weight: 700; letter-spacing: 0.05em; }
-.ac-logo-l3 { font-size: 0.4rem; color: #ccc; letter-spacing: 0.12em; }
-
+.ac-logo-l3 { font-size: 0.4rem; letter-spacing: 0.12em; color: #ccc; }
 .ac-header-center { text-align: center; }
 .ac-header-name { font-size: 0.75rem; color: #ccc; }
 .ac-header-title { font-size: 1.5rem; font-weight: 300; letter-spacing: 0.04em; }
-
-.ac-header-back {
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  font-family: inherit;
-}
+.ac-header-back { background: none; border: none; color: #fff; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; cursor: pointer; font-family: inherit; }
 .ac-header-back:hover { text-decoration: underline; }
 
 /* ── Body ── */
-.ac-body {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
+.ac-body { display: flex; flex: 1; overflow: hidden; }
 
 /* ── Left Panel ── */
 .ac-left {
-  width: 240px;
-  flex-shrink: 0;
-  padding: 1rem;
+  width: 220px;
+  min-width: 220px;
   border-right: 1px solid #ddd;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.85rem;
   overflow-y: auto;
 }
 
-/* Mini calendar */
-.ac-mini-cal {
-  border: 1px solid #ccc;
-  padding: 0.5rem;
-}
-.ac-mini-header {
-  text-align: center;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  margin-bottom: 0.4rem;
-}
-.ac-mini-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
-  text-align: center;
-}
-.ac-mini-dow {
-  font-size: 0.6rem;
-  font-weight: 700;
-  color: #888;
-  padding: 0.2rem 0;
-}
-.ac-mini-day {
-  font-size: 0.65rem;
-  padding: 0.2rem;
-  cursor: pointer;
-  border-radius: 2px;
-}
+.ac-mini-cal { border: 1px solid #ccc; padding: 0.6rem; }
+.ac-mini-header { text-align: center; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; margin-bottom: 0.5rem; }
+.ac-mini-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.ac-mini-dow { font-size: 0.62rem; font-weight: 700; text-align: center; color: #888; padding: 2px 0; }
+.ac-mini-day { font-size: 0.68rem; text-align: center; padding: 2px 0; border-radius: 50%; cursor: pointer; }
 .ac-mini-day:hover:not(.empty) { background: #f0f0f0; }
 .ac-mini-day.empty { cursor: default; }
 
-/* Add button */
-.ac-add-btn {
-  width: 100%;
-  padding: 0.55rem;
-  background: #1c1c1c;
-  color: #fff;
-  border: none;
-  font-size: 0.82rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  letter-spacing: 0.04em;
-}
+.ac-add-btn { width: 100%; padding: 0.6rem; background: #1c1c1c; color: #fff; border: none; font-size: 0.82rem; font-weight: 600; font-family: inherit; cursor: pointer; letter-spacing: 0.04em; }
 .ac-add-btn:hover { background: #333; }
 
-/* Add form */
-.ac-add-form {
-  border: 1px solid #ccc;
-  padding: 0.6rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-.ac-form-row { display: flex; align-items: center; gap: 0.35rem; }
-.ac-date-input, .ac-time-input {
-  flex: 1;
-  border: 1px solid #ccc;
-  padding: 0.3rem 0.4rem;
-  font-size: 0.75rem;
-  font-family: inherit;
-  min-width: 0;
-}
-.ac-time-sep { font-size: 0.8rem; color: #555; flex-shrink: 0; }
-.ac-form-cancel {
-  padding: 0.3rem 0.5rem;
-  border: 1px solid #ccc;
-  background: #fff;
-  font-size: 0.72rem;
-  cursor: pointer;
-  font-family: inherit;
-  white-space: nowrap;
-}
-.ac-form-add {
-  padding: 0.3rem 0.6rem;
-  border: none;
-  background: #1c1c1c;
-  color: #fff;
-  font-size: 0.72rem;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
-  white-space: nowrap;
-}
+.ac-add-form { border: 1px solid #ccc; padding: 0.6rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.ac-form-row { display: flex; align-items: center; gap: 0.4rem; }
+.ac-date-input { flex: 1; border: 1px solid #ccc; padding: 0.3rem 0.4rem; font-size: 0.75rem; font-family: inherit; outline: none; min-width: 0; }
+.ac-time-input { width: 64px; border: 1px solid #ccc; padding: 0.3rem 0.3rem; font-size: 0.75rem; font-family: inherit; outline: none; }
+.ac-time-sep { font-size: 0.8rem; color: #666; }
+.ac-form-cancel { border: 1px solid #ccc; background: #fff; padding: 0.3rem 0.5rem; font-size: 0.72rem; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.ac-form-add { border: none; background: #1c1c1c; color: #fff; padding: 0.3rem 0.6rem; font-size: 0.72rem; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.ac-form-add:hover { background: #333; }
 
-/* Slot detail */
-.ac-slot-detail {
-  border: 1px solid #ccc;
-  padding: 0.6rem 0.75rem;
-}
-.ac-slot-detail-time { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; }
-.ac-slot-detail-btns { display: flex; gap: 0.5rem; }
-.ac-detail-btn {
-  padding: 0.3rem 0.6rem;
-  border: 1px solid #ccc;
-  background: #fff;
-  font-size: 0.72rem;
-  cursor: pointer;
-  font-family: inherit;
-}
-.ac-detail-btn.dark {
-  background: #1c1c1c;
-  color: #fff;
-  border-color: #1c1c1c;
-}
+.ac-slot-detail { border: 1px solid #ccc; padding: 0.6rem 0.75rem; }
+.ac-slot-detail-time { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; }
+.ac-slot-detail-btns { display: flex; gap: 0.4rem; }
+.ac-detail-btn { flex: 1; padding: 0.35rem 0; border: 1px solid #ccc; background: #fff; font-size: 0.72rem; cursor: pointer; font-family: inherit; }
+.ac-detail-btn.dark { background: #1c1c1c; color: #fff; border-color: #1c1c1c; }
+.ac-detail-btn:hover { background: #f5f5f5; }
+.ac-detail-btn.dark:hover { background: #333; }
 
-/* Booking detail */
-.ac-booking-detail {
-  border: 1px solid #ccc;
-  padding: 0.75rem;
-}
-.ac-booking-detail-title { font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem; }
-.ac-booking-detail p { font-size: 0.78rem; margin: 0.25rem 0; }
-.ac-bd-key { font-weight: 600; }
-.ac-cancel-booking {
-  margin-top: 0.5rem;
-  padding: 0.3rem 0.75rem;
-  border: 1px solid #ccc;
-  background: #fff;
-  font-size: 0.72rem;
-  cursor: pointer;
-  font-family: inherit;
-}
+.ac-booking-detail { border: 1px solid #ccc; padding: 0.75rem; }
+.ac-booking-detail-title { font-size: 0.85rem; font-weight: 700; margin-bottom: 0.6rem; }
+.ac-booking-detail p { font-size: 0.78rem; margin: 0.25rem 0; color: #333; }
+.ac-bd-key { font-weight: 600; margin-right: 0.25rem; }
+.ac-cancel-booking { margin-top: 0.6rem; border: 1px solid #ccc; background: #fff; padding: 0.3rem 0.75rem; font-size: 0.75rem; cursor: pointer; font-family: inherit; }
+.ac-cancel-booking:hover { background: #f5f5f5; }
 
-/* ── Right — Week Grid ── */
-.ac-right {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  padding: 0.75rem 1rem;
-}
+/* ── Right Panel ── */
+.ac-right { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 0.75rem 1rem; }
 
-.ac-week-nav {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-  border: 1px solid #ccc;
-  padding: 0.4rem 0.75rem;
-}
-.ac-today-btn {
-  padding: 0.3rem 0.75rem;
-  border: 1px solid #ccc;
-  background: #fff;
-  font-size: 0.8rem;
-  cursor: pointer;
-  font-family: inherit;
-}
-.ac-nav-btn {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
-  color: #333;
-  padding: 0 0.25rem;
-}
-.ac-week-label { font-size: 0.9rem; font-weight: 600; flex: 1; text-align: center; }
+.ac-week-nav { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+.ac-today-btn { border: 1px solid #ccc; background: #fff; padding: 0.3rem 0.75rem; font-size: 0.8rem; cursor: pointer; font-family: inherit; }
+.ac-today-btn:hover { background: #f5f5f5; }
+.ac-nav-btn { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #333; padding: 0 0.25rem; line-height: 1; }
+.ac-week-label { flex: 1; text-align: center; font-size: 1rem; font-weight: 600; }
 
-/* Grid wrapper */
-.ac-grid-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid #ccc;
-  overflow: hidden;
-}
+/* Grid */
+.ac-grid-wrapper { flex: 1; display: flex; flex-direction: column; border: 1px solid #ddd; overflow: hidden; }
 
-/* Day header row */
 .ac-day-header-row {
   display: grid;
   grid-template-columns: 56px repeat(7, 1fr);
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #ddd;
+  background: #fff;
   flex-shrink: 0;
 }
-.ac-time-gutter { background: #fff; }
-.ac-day-header-cell {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0.35rem 0;
-  border-left: 1px solid #ddd;
-}
-.ac-day-name { font-size: 0.65rem; font-weight: 700; color: #888; letter-spacing: 0.05em; }
-.ac-day-num { font-size: 0.85rem; font-weight: 600; }
+.ac-time-gutter { border-right: 1px solid #ddd; }
+.ac-day-header-cell { display: flex; flex-direction: column; align-items: center; padding: 0.4rem 0.2rem; border-right: 1px solid #ddd; }
+.ac-day-header-cell:last-child { border-right: none; }
+.ac-day-name { font-size: 0.65rem; font-weight: 700; color: #888; letter-spacing: 0.06em; }
+.ac-day-num { font-size: 0.88rem; font-weight: 600; color: #1c1c1c; }
 
-/* Grid body */
 .ac-grid-body {
   display: grid;
   grid-template-columns: 56px repeat(7, 1fr);
   flex: 1;
   overflow-y: auto;
-  position: relative;
 }
 
-/* Time column */
-.ac-time-col {
-  display: flex;
-  flex-direction: column;
-}
-.ac-hour-label {
-  height: 60px;
-  font-size: 0.65rem;
-  color: #888;
-  padding: 0.2rem 0.4rem 0 0;
-  text-align: right;
-  flex-shrink: 0;
-  border-top: 1px solid #e8e8e8;
-}
+.ac-time-col { border-right: 1px solid #ddd; display: flex; flex-direction: column; }
+.ac-hour-label { height: 60px; display: flex; align-items: flex-start; padding: 3px 5px 0 0; font-size: 0.65rem; color: #999; border-bottom: 1px solid #ebebeb; flex-shrink: 0; justify-content: flex-end; }
 
-/* Day columns */
-.ac-day-col {
-  position: relative;
-  border-left: 1px solid #ddd;
-}
-.ac-hour-cell {
-  height: 60px;
-  border-top: 1px dashed #e8e8e8;
-  box-sizing: border-box;
-}
+.ac-day-col { border-right: 1px solid #ddd; position: relative; }
+.ac-day-col:last-child { border-right: none; }
+.ac-hour-cell { height: 60px; border-bottom: 1px dashed #ebebeb; }
 
-/* Events */
+/* Events — positioned absolutely within day column */
 .ac-event {
   position: absolute;
   left: 2px;
@@ -305,66 +126,28 @@
   border-radius: 3px;
   padding: 2px 4px;
   font-size: 0.65rem;
-  overflow: hidden;
   cursor: pointer;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  box-sizing: border-box;
 }
-.ac-event.available {
-  background: #d4edda;
-  border: 1px solid #a8d5b5;
-  color: #2d6a3f;
-}
-.ac-event.booked {
-  background: #d6e8f7;
-  border: 1px solid #93c5e8;
-  color: #1a4f7a;
-}
-.ac-event.blocked {
-  background: #e8e8e8;
-  border: 1px solid #ccc;
-  color: #666;
-}
-.ac-evt-label { font-weight: 600; line-height: 1.2; }
-.ac-evt-time { line-height: 1.2; }
+.ac-event.available { background: #d4edda; border: 1px solid #a8d5b5; color: #2d6a3f; }
+.ac-event.booked    { background: #d6e8f7; border: 1px solid #93c5e8; color: #1a4f7a; }
+.ac-event.blocked   { background: #e8e8e8; border: 1px solid #ccc;    color: #666; }
+.ac-event:hover { filter: brightness(0.95); }
+.ac-evt-label { font-weight: 600; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ac-evt-time  { line-height: 1.2; opacity: 0.9; }
 
-/* ── Confirmation overlay ── */
-.ac-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-.ac-confirm-dialog {
-  background: #fff;
-  border: 2px solid #555;
-  padding: 2rem 2.5rem;
-  text-align: center;
-  min-width: 320px;
-}
+/* Confirmation overlay */
+.ac-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; z-index: 999; }
+.ac-confirm-dialog { background: #fff; border: 2px solid #555; padding: 2rem 2.5rem; width: 340px; text-align: center; }
 .ac-confirm-q { font-size: 1rem; font-weight: 600; margin-bottom: 1.25rem; }
-.ac-confirm-details { margin-bottom: 1.5rem; }
-.ac-confirm-details p { font-size: 0.95rem; margin: 0.25rem 0; }
-.ac-confirm-btns { display: flex; justify-content: center; gap: 1rem; }
-.ac-confirm-no {
-  padding: 0.45rem 1.5rem;
-  border: 1px solid #ccc;
-  background: #fff;
-  font-size: 0.85rem;
-  cursor: pointer;
-  font-family: inherit;
-}
-.ac-confirm-yes {
-  padding: 0.45rem 1.5rem;
-  border: 1px solid #888;
-  background: #fff;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
-}
+.ac-confirm-details { background: #f9f9f9; border: 1px solid #ddd; padding: 0.75rem 1rem; margin-bottom: 1.25rem; }
+.ac-confirm-details p { margin: 0.2rem 0; font-size: 0.9rem; }
+.ac-confirm-btns { display: flex; gap: 0.75rem; justify-content: center; }
+.ac-confirm-no  { padding: 0.4rem 1.5rem; border: 1px solid #999; background: #fff; cursor: pointer; font-family: inherit; font-size: 0.85rem; }
+.ac-confirm-yes { padding: 0.4rem 1.5rem; border: 1px solid #888; background: #fff; cursor: pointer; font-family: inherit; font-size: 0.85rem; font-weight: 600; }
+.ac-confirm-no:hover  { background: #f5f5f5; }
 .ac-confirm-yes:hover { background: #f0f0f0; }
