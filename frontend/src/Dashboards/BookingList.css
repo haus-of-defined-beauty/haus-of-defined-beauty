@@ -81,3 +81,28 @@
   font-size: 0.9rem;
   padding: 2rem 0;
 }
+
+.action-cell {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.btn-reschedule {
+  padding: 0.35rem 0.9rem;
+  background: transparent;
+  color: #1c6b9e;
+  border: 1px solid #1c6b9e;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-reschedule:hover {
+  background: #f0f6fb;
+}

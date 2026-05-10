@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import RescheduleModal from './RescheduleModal';
 import './BookingList.css';
 
 const STATUS_COLORS = {
@@ -13,6 +14,7 @@ const STATUS_COLORS = {
 function BookingList({ isAdmin }) {
   const [bookings, setBookings] = useState([]);
   const [error, setError] = useState('');
+  const [rescheduleTarget, setRescheduleTarget] = useState(null);
 
   const endpoint = isAdmin ? '/api/bookings' : '/api/bookings/my';
 
@@ -37,6 +39,13 @@ function BookingList({ isAdmin }) {
   return (
     <div className="booking-list">
       <h3>{isAdmin ? 'All Bookings' : 'My Bookings'}</h3>
+      {rescheduleTarget && (
+        <RescheduleModal
+          booking={rescheduleTarget}
+          onClose={() => setRescheduleTarget(null)}
+          onSuccess={() => { setRescheduleTarget(null); load(); }}
+        />
+      )}
       <table>
         <thead>
           <tr>
@@ -60,7 +69,10 @@ function BookingList({ isAdmin }) {
                   {b.status}
                 </span>
               </td>
-              <td>
+              <td className="action-cell">
+                {['pending', 'confirmed'].includes(b.status) && !isAdmin && (
+                  <button className="btn-reschedule" onClick={() => setRescheduleTarget(b)}>Reschedule</button>
+                )}
                 {['pending', 'confirmed'].includes(b.status) && (
                   <button className="btn-cancel" onClick={() => handleCancel(b._id)}>Cancel</button>
                 )}
