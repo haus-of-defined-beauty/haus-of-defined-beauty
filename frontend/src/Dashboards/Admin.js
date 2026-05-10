@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import CalendarView from './CalendarView';
+import { useNavigate } from 'react-router-dom';
 import BookingList from './BookingList';
 import Reports from './Reports';
 import ProfilePanel from './ProfilePanel';
@@ -9,11 +9,11 @@ const TABS = ['Bookings', 'Calendar', 'Reports', 'Profile'];
 
 function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('Bookings');
+  const navigate = useNavigate();
 
   const renderTab = () => {
     switch (activeTab) {
       case 'Bookings': return <BookingList isAdmin />;
-      case 'Calendar': return <CalendarView isAdmin />;
       case 'Reports': return <Reports />;
       case 'Profile': return <ProfilePanel isAdmin />;
       default: return null;
@@ -31,7 +31,7 @@ function AdminDashboard() {
           <button
             key={tab}
             className={`nav-tab ${activeTab === tab ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => tab === 'Calendar' ? navigate('/admin/calendar') : setActiveTab(tab)}
           >
             {tab}
           </button>
