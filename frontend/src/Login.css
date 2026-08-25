@@ -1,13 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Inter:wght@300;400;600&display=swap');
+
+/* ── Layout ── */
 .login-container {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 1fr 1fr;
+  font-family: 'Inter', sans-serif;
 }
 
+/* ════════════════════════════════════════
+   BRAND SIDE
+════════════════════════════════════════ */
 .login-brand {
-  background: #1c1c1c;
+  background: #080808;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 3rem;
@@ -15,64 +21,190 @@
   overflow: hidden;
 }
 
+/* Warm radial glow behind everything */
 .login-brand::before {
   content: '';
   position: absolute;
-  width: 400px;
-  height: 400px;
-  border-radius: 50%;
-  border: 1px solid rgba(196, 168, 130, 0.15);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, #1c120a 0%, #080808 68%);
+  z-index: 0;
 }
 
-.login-brand::after {
-  content: '';
-  position: absolute;
-  width: 600px;
-  height: 600px;
-  border-radius: 50%;
-  border: 1px solid rgba(196, 168, 130, 0.08);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.brand-content {
+/* ── Scene container ── */
+.logo-scene {
   position: relative;
   z-index: 1;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2.2rem;
+  width: 100%;
+  height: 500px;
 }
 
-.brand-monogram {
-  font-family: 'Playfair Display', serif;
-  font-size: 5rem;
-  font-weight: 700;
+/* ── Spinning decorative rings ── */
+.deco-ring {
+  position: absolute;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  pointer-events: none;
+}
+
+.r1 {
+  width: 270px;
+  height: 270px;
+  border: 1px dashed rgba(196, 168, 130, 0.45);
+  animation: spinCW 13s linear infinite;
+}
+
+.r2 {
+  width: 390px;
+  height: 390px;
+  border: 1px solid rgba(196, 168, 130, 0.14);
+  animation: spinCCW 21s linear infinite;
+}
+
+.r3 {
+  width: 520px;
+  height: 520px;
+  border: 1px dashed rgba(196, 168, 130, 0.06);
+  animation: spinCW 34s linear infinite;
+}
+
+/* ── Wrapper handles all transform (spin) animations ── */
+.logo-box-wrapper {
+  position: relative;
+  z-index: 2;
+  /* entrance spin once, then periodic spin every ~9 s */
+  animation-name:            spinEntrance, periodicSpin;
+  animation-duration:        1.8s,         9s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1), ease-in-out;
+  animation-delay:           0s,           4s;
+  animation-iteration-count: 1,            infinite;
+  animation-fill-mode:       both,         none;
+}
+
+/* ── Inner box handles only box-shadow (glow) ── */
+.logo-box {
+  animation: boxGlow 4s ease-in-out 2.1s infinite;
+  border-radius: 4px;
+}
+
+.logo-img {
+  display: block;
+  width: 300px;
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  animation: fadeInUp 0.6s ease 1.4s both;
+}
+
+/* Corner accent dots on the logo border */
+.logo-box-wrapper::before,
+.logo-box-wrapper::after {
+  content: '◆';
+  position: absolute;
+  font-size: 0.55rem;
   color: #c4a882;
+  animation: cornerPulse 3s ease-in-out 2s infinite;
+  z-index: 3;
+}
+.logo-box-wrapper::before { top: -8px;    left:  -8px; }
+.logo-box-wrapper::after  { bottom: -8px; right: -8px; }
+
+/* ── Sparkles ── */
+.spark {
+  position: absolute;
+  color: #c4a882;
+  pointer-events: none;
+  z-index: 3;
   line-height: 1;
-  margin-bottom: 1.5rem;
-  letter-spacing: 0.05em;
 }
 
-.brand-name {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #fff;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  margin-bottom: 0.5rem;
+.sp1 { top: 11%;    left: 14%;   font-size: 0.75rem; animation: twinkle 2.9s ease-in-out 0.3s  infinite; }
+.sp2 { top: 16%;    right: 12%;  font-size: 1.15rem; animation: twinkle 3.5s ease-in-out 0.9s  infinite; }
+.sp3 { top: 48%;    left: 5%;    font-size: 0.6rem;  animation: twinkle 2.3s ease-in-out 1.6s  infinite; }
+.sp4 { top: 52%;    right: 5%;   font-size: 0.9rem;  animation: twinkle 4.0s ease-in-out 0.5s  infinite; }
+.sp5 { bottom: 16%; left: 18%;   font-size: 0.8rem;  animation: twinkle 2.7s ease-in-out 1.2s  infinite; }
+.sp6 { bottom: 12%; right: 15%;  font-size: 0.65rem; animation: twinkle 3.3s ease-in-out 2.0s  infinite; }
+.sp7 { top: 32%;    left: 48%;   font-size: 0.5rem;  animation: twinkle 4.2s ease-in-out 0.7s  infinite; }
+
+/* ════════════════════════════════════════
+   KEYFRAMES
+════════════════════════════════════════ */
+
+/* Rings spin around their own centre */
+@keyframes spinCW {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+@keyframes spinCCW {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(-360deg); }
 }
 
-.brand-tagline {
-  font-size: 0.85rem;
-  color: #c4a882;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  font-weight: 300;
+/* Logo spins in on load with a bounce settle */
+@keyframes spinEntrance {
+  0%   { transform: rotate(-180deg) scale(0.35); opacity: 0; }
+  65%  { transform: rotate(12deg)   scale(1.05); opacity: 1; }
+  80%  { transform: rotate(-6deg)   scale(0.98); }
+  92%  { transform: rotate(3deg)    scale(1.01); }
+  100% { transform: rotate(0deg)    scale(1);    opacity: 1; }
 }
 
+/* Recurring spin — pauses for ~7.4 s then spins for ~1.6 s, repeats */
+@keyframes periodicSpin {
+  /* Hold still */
+  0%, 82% { transform: rotate(0deg)   scale(1);    }
+  /* Slight wind-up back */
+  86%     { transform: rotate(-10deg) scale(1.03); }
+  /* Full forward spin */
+  94%     { transform: rotate(360deg) scale(1.02); }
+  /* Tiny overshoot settle */
+  97%     { transform: rotate(354deg) scale(0.99); }
+  /* Rest — visually same as 0 deg so next iteration is seamless */
+  100%    { transform: rotate(360deg) scale(1);    }
+}
+
+/* Gold border glow pulse */
+@keyframes boxGlow {
+  0%, 100% {
+    box-shadow:
+      0 0 10px rgba(196, 168, 130, 0.18),
+      0 0  2px rgba(196, 168, 130, 0.08) inset;
+  }
+  50% {
+    box-shadow:
+      0 0 45px rgba(196, 168, 130, 0.55),
+      0 0 20px rgba(196, 168, 130, 0.12) inset;
+  }
+}
+
+/* Corner diamond pulse */
+@keyframes cornerPulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50%      { opacity: 1;   transform: scale(1.3); }
+}
+
+/* Sparkle twinkle + slight rotate */
+@keyframes twinkle {
+  0%, 100% { opacity: 0;   transform: scale(0.2) rotate(0deg);  }
+  45%      { opacity: 0.4; }
+  50%      { opacity: 1;   transform: scale(1.5) rotate(18deg); }
+  55%      { opacity: 0.4; }
+}
+
+/* Slide up entrance for text */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ════════════════════════════════════════
+   FORM SIDE
+════════════════════════════════════════ */
 .login-form-side {
   background: #faf8f5;
   display: flex;
@@ -100,14 +232,14 @@
   font-weight: 400;
 }
 
-.dev-login-form {
+.otp-form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.dev-login-form input,
-.dev-login-form select {
+.otp-form input,
+.otp-form select {
   padding: 0.85rem 1rem;
   border: 1px solid #e0d8d0;
   border-radius: 4px;
@@ -119,14 +251,14 @@
   width: 100%;
 }
 
-.dev-login-form input:focus,
-.dev-login-form select:focus {
+.otp-form input:focus,
+.otp-form select:focus {
   outline: none;
   border-color: #c4a882;
   box-shadow: 0 0 0 3px rgba(196, 168, 130, 0.12);
 }
 
-.dev-login-form input::placeholder {
+.otp-form input::placeholder {
   color: #bbb;
   font-weight: 300;
 }
@@ -148,18 +280,9 @@
   margin-top: 0.5rem;
 }
 
-.google-btn:hover:not(:disabled) {
-  background: #c4a882;
-}
-
-.google-btn:active {
-  transform: scale(0.99);
-}
-
-.google-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+.google-btn:hover:not(:disabled) { background: #c4a882; }
+.google-btn:active                { transform: scale(0.99); }
+.google-btn:disabled              { opacity: 0.5; cursor: not-allowed; }
 
 .login-error {
   color: #b94040;
@@ -170,7 +293,7 @@
   border-left: 3px solid #b94040;
 }
 
-.dev-notice {
+.login-hint {
   font-size: 0.75rem;
   color: #bbb;
   margin-top: 1.5rem;
@@ -178,21 +301,59 @@
   letter-spacing: 0.02em;
 }
 
+.otp-links {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+}
+
+.otp-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.8rem;
+  color: #c4a882;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+
+.otp-link:hover { text-decoration: underline; }
+.otp-link:disabled { color: #ccc; cursor: not-allowed; text-decoration: none; }
+
+.number-grid {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.number-btn {
+  flex: 1;
+  padding: 1.2rem 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-family: 'Playfair Display', serif;
+  color: #1c1c1c;
+  background: #fff;
+  border: 1px solid #e0d8d0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.number-btn:hover:not(:disabled) { border-color: #c4a882; background: #faf6f0; }
+.number-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Responsive ── */
 @media (max-width: 768px) {
-  .login-container {
-    grid-template-columns: 1fr;
-  }
+  .login-container { grid-template-columns: 1fr; }
 
-  .login-brand {
-    min-height: 220px;
-    padding: 2rem;
-  }
+  .login-brand { min-height: 320px; padding: 2rem; }
 
-  .brand-monogram {
-    font-size: 3.5rem;
-  }
+  .logo-scene { height: 300px; gap: 1.5rem; }
 
-  .brand-name {
-    font-size: 1.1rem;
-  }
+  .logo-img { width: 200px; }
+
+  .r1 { width: 200px; height: 200px; }
+  .r2 { width: 290px; height: 290px; }
+  .r3 { width: 380px; height: 380px; }
 }
