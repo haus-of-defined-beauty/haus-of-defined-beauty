@@ -15,6 +15,13 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+// PayFast's ITN webhook posts application/x-www-form-urlencoded; the raw
+// bytes are captured here since signature verification must hash exactly
+// what PayFast sent, not a re-encoded reconstruction of the parsed body.
+app.use(express.urlencoded({
+  extended: false,
+  verify: (req, res, buf) => { req.rawBody = buf.toString('utf8'); },
+}));
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))

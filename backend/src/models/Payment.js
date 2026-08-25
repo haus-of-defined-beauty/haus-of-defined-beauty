@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const paymentSchema = new mongoose.Schema({
-  bookingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Booking', required: true },
+  groupId: { type: mongoose.Schema.Types.ObjectId, required: true, index: true },
   customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', required: true },
   amount: { type: Number, required: true, default: 100 }, // R100 booking fee
   status: { type: String, enum: ['pending', 'successful', 'failed', 'refunded'], default: 'pending' },
