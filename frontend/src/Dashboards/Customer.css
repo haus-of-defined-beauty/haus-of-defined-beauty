@@ -2,3 +2,26 @@
   color: #a8c4be;
   border-color: #a8c4be;
 }
+
+.welcome-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f5f0ea;
+  border-bottom: 1px solid #e0d8d0;
+  padding: 0.75rem 2.5rem;
+  font-size: 0.9rem;
+  color: #1c1c1c;
+}
+
+.welcome-banner button {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: #888;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  line-height: 1;
+}
+
+.welcome-banner button:hover { color: #1c1c1c; }

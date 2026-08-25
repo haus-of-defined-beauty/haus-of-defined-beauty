@@ -15,12 +15,26 @@
   border-bottom: 1px solid rgba(196, 168, 130, 0.2);
 }
 
-.dashboard-header h2 {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.25rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  color: #fff;
+.dashboard-logo {
+  height: 44px;
+  width: auto;
+  border-radius: 6px;
+  box-shadow:
+    0 0 0 1px rgba(196, 168, 130, 0.5),
+    0 0 14px rgba(196, 168, 130, 0.3);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+.dashboard-logo:hover {
+  box-shadow:
+    0 0 0 1px rgba(196, 168, 130, 0.75),
+    0 0 20px rgba(196, 168, 130, 0.5);
+  transform: scale(1.03);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .role-badge {
@@ -34,6 +48,20 @@
   text-transform: uppercase;
   letter-spacing: 0.12em;
 }
+
+.logout-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+
+.logout-btn:hover { color: #c4a882; text-decoration: underline; }
 
 .dashboard-nav {
   background: #fff;

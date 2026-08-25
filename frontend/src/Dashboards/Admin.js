@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import BookingList from './BookingList';
 import Reports from './Reports';
 import ProfilePanel from './ProfilePanel';
+import logo from '../assets/logo.jpeg';
 import './Admin.css';
 
 const TABS = ['Bookings', 'Calendar', 'Reports', 'Profile'];
@@ -10,6 +12,12 @@ const TABS = ['Bookings', 'Calendar', 'Reports', 'Profile'];
 function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('Bookings');
   const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.clear();
+    delete axios.defaults.headers.common['Authorization'];
+    navigate('/login');
+  };
 
   const renderTab = () => {
     switch (activeTab) {
@@ -23,8 +31,11 @@ function AdminDashboard() {
   return (
     <div className="dashboard">
       <header className="dashboard-header">
-        <h2>Haus of Defined Beauty</h2>
-        <span className="role-badge">Admin</span>
+        <img src={logo} alt="Haus of Defined Beauty" className="dashboard-logo" />
+        <div className="header-right">
+          <span className="role-badge">Admin</span>
+          <button className="logout-btn" onClick={handleLogout}>Log Out</button>
+        </div>
       </header>
       <nav className="dashboard-nav">
         {TABS.map(tab => (
