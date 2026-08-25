@@ -2,8 +2,12 @@ const mongoose = require('mongoose');
 
 const calendarSchema = new mongoose.Schema({
   date: { type: Date, required: true, unique: true },
-  availableSlots: [{ type: String }], // e.g. ["09:00", "10:00", "11:00"]
-  blockedSlots: [{ type: String }],
+  slots: [{
+    start: { type: String, required: true }, // "HH:MM"
+    end: { type: String, required: true },   // "HH:MM"
+    status: { type: String, enum: ['available', 'booked', 'blocked'], default: 'available' },
+    bookingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Booking', default: null },
+  }],
   blockedDates: { type: Boolean, default: false },
 }, { timestamps: true });
 

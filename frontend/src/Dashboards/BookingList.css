@@ -57,6 +57,18 @@
   letter-spacing: 0.06em;
 }
 
+.status-select {
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid;
+  background: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+}
+
 .btn-cancel {
   padding: 0.35rem 0.9rem;
   background: transparent;

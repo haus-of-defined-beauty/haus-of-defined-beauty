@@ -116,6 +116,10 @@
   margin: 0;
 }
 
+.modal-error p {
+  margin: 0 0 0.6rem;
+}
+
 .modal-actions {
   display: flex;
   gap: 0.75rem;

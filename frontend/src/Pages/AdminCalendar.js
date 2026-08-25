@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import logo from '../assets/logo.jpeg';
 import './AdminCalendar.css';
 
 const DAY_NAMES = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
@@ -8,16 +10,12 @@ const MONTH_NAMES = ['January','February','March','April','May','June','July','A
 const GRID_START = 8 * 60;
 const GRID_DURATION = 9 * 60;
 
-// dayIndex: 0=Mon … 6=Sun, startMin relative to 08:00
-const INITIAL_EVENTS = [
-  { id: 1, dayIndex: 4, startMin: 0,   durationMin: 30, type: 'available', label: '',              text: '08:00 - 08:30' },
-  { id: 2, dayIndex: 4, startMin: 60,  durationMin: 30, type: 'booked',    label: 'Soak Off & Acrylic', text: '09:00 - 09:30',
-    booking: { name: 'Jane Doe', date: '01 May 2026', time: '09:00 - 09:30', service: 'Soak-Off & Acrylic' } },
-  { id: 3, dayIndex: 4, startMin: 120, durationMin: 60, type: 'available', label: '',              text: '10:00 - 11:00' },
-  { id: 4, dayIndex: 4, startMin: 210, durationMin: 30, type: 'booked',    label: 'Pedicure',      text: '11:30 - 12:00',
-    booking: { name: 'Jane Doe', date: '01 May 2026', time: '11:30 - 12:00', service: 'Pedicure' } },
-  { id: 5, dayIndex: 4, startMin: 300, durationMin: 30, type: 'available', label: '',              text: '13:00 - 13:30' },
-];
+function isoDate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
 function getMondayOf(date) {
   const d = new Date(date);
@@ -46,12 +44,44 @@ function getMiniCalDays(year, month) {
 
 function toPercent(minutes) { return (minutes / GRID_DURATION) * 100; }
 
+function slotToEvent(slot, dayIndex, dateIso) {
+  const [sh, sm] = slot.start.split(':').map(Number);
+  const [eh, em] = slot.end.split(':').map(Number);
+  const startMin = sh * 60 + sm - GRID_START;
+  const durationMin = (eh * 60 + em) - (sh * 60 + sm);
+  const type = slot.status === 'booked' ? 'booked' : slot.status === 'blocked' ? 'blocked' : 'available';
+
+  let booking = null;
+  if (slot.status === 'booked' && slot.bookingId) {
+    const b = slot.bookingId;
+    booking = {
+      id: b._id,
+      name: b.customerId?.name || '—',
+      date: new Date(b.date).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' }),
+      time: `${slot.start} - ${slot.end}`,
+      service: b.serviceId?.name || '—',
+    };
+  }
+
+  return {
+    id: slot._id,
+    date: dateIso,
+    dayIndex,
+    startMin,
+    durationMin,
+    type,
+    label: booking ? `${booking.name} — ${booking.service}` : '',
+    text: `${slot.start} - ${slot.end}`,
+    booking,
+  };
+}
+
 export default function AdminCalendar() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   const [weekStart, setWeekStart] = useState(getMondayOf(new Date()));
-  const [events, setEvents] = useState(INITIAL_EVENTS);
+  const [events, setEvents] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [addDate, setAddDate] = useState('');
   const [addStart, setAddStart] = useState('');
@@ -59,8 +89,24 @@ export default function AdminCalendar() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [selectedBooking, setSelectedBooking] = useState(null);
+  const [formError, setFormError] = useState('');
+  const [slotError, setSlotError] = useState('');
 
   const weekDays = getWeekDays(weekStart);
+
+  const loadWeek = useCallback(() => {
+    const days = getWeekDays(weekStart);
+    return Promise.all(
+      days.map((d, dayIndex) => {
+        const iso = isoDate(d);
+        return axios.get(`/api/calendar/${iso}`)
+          .then(res => (res.data.slots || []).map(slot => slotToEvent(slot, dayIndex, iso)))
+          .catch(() => []);
+      })
+    ).then(perDay => setEvents(perDay.flat()));
+  }, [weekStart]);
+
+  useEffect(() => { loadWeek(); }, [loadWeek]);
 
   function weekLabel() {
     const end = new Date(weekStart);
@@ -77,10 +123,13 @@ export default function AdminCalendar() {
     setShowAddForm(true);
     setSelectedSlot(null);
     setSelectedBooking(null);
+    setFormError('');
   }
 
   function handleEventClick(evt) {
     setShowAddForm(false);
+    setFormError('');
+    setSlotError('');
     if (evt.type === 'booked' && evt.booking) {
       setSelectedBooking(evt.booking);
       setSelectedSlot(null);
@@ -90,27 +139,41 @@ export default function AdminCalendar() {
     }
   }
 
-  function handleRemoveSlot() {
+  async function handleRemoveSlot() {
     if (!selectedSlot) return;
-    setEvents(e => e.filter(ev => ev.id !== selectedSlot.id));
-    setSelectedSlot(null);
+    try {
+      await axios.delete(`/api/calendar/${selectedSlot.date}/slots/${selectedSlot.id}`);
+      setSelectedSlot(null);
+      setSlotError('');
+      await loadWeek();
+    } catch (err) {
+      setSlotError(err.response?.data?.message || 'Failed to remove slot.');
+    }
   }
 
-  function handleAddConfirm() {
+  async function handleAddConfirm() {
     setShowConfirm(false);
     if (!addDate || !addStart || !addEnd) return;
-    const [sh, sm] = addStart.split(':').map(Number);
-    const [eh, em] = addEnd.split(':').map(Number);
-    const startMin = sh * 60 + sm - GRID_START;
-    const durationMin = eh * 60 + em - (sh * 60 + sm);
-    const dateObj = new Date(addDate);
-    const dayIndex = (dateObj.getDay() + 6) % 7;
-    setEvents(e => [...e, {
-      id: Date.now(), dayIndex, startMin, durationMin,
-      type: 'available', label: '', text: `${addStart} - ${addEnd}`,
-    }]);
-    setAddDate(''); setAddStart(''); setAddEnd('');
-    setShowAddForm(false);
+    try {
+      await axios.post(`/api/calendar/${addDate}/slots`, { start: addStart, end: addEnd });
+      setAddDate(''); setAddStart(''); setAddEnd('');
+      setShowAddForm(false);
+      setFormError('');
+      await loadWeek();
+    } catch (err) {
+      setFormError(err.response?.data?.message || 'Failed to add slot.');
+    }
+  }
+
+  async function handleCancelBooking() {
+    if (!selectedBooking) return;
+    try {
+      await axios.patch(`/api/bookings/${selectedBooking.id}/cancel`);
+      setSelectedBooking(null);
+      await loadWeek();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to cancel booking.');
+    }
   }
 
   function formatConfirmDate() {
@@ -132,9 +195,7 @@ export default function AdminCalendar() {
         <div className="ac-header-left">
           <button className="ac-hamburger">&#9776;</button>
           <div className="ac-logo-box">
-            <span className="ac-logo-l1">HAUS OF DEFINED</span>
-            <span className="ac-logo-l2">BEAUTY</span>
-            <span className="ac-logo-l3">BEAUTY SALON</span>
+            <img src={logo} alt="Haus of Defined Beauty" className="ac-logo-img" />
           </div>
         </div>
         <div className="ac-header-center">
@@ -176,6 +237,7 @@ export default function AdminCalendar() {
                 <input type="time" className="ac-time-input" value={addEnd} onChange={e => setAddEnd(e.target.value)} />
                 <button className="ac-form-add" onClick={() => addDate && addStart && addEnd && setShowConfirm(true)}>Add</button>
               </div>
+              {formError && <p className="ac-form-error">{formError}</p>}
             </div>
           )}
 
@@ -187,6 +249,7 @@ export default function AdminCalendar() {
                 <button className="ac-detail-btn">Change</button>
                 <button className="ac-detail-btn dark" onClick={handleRemoveSlot}>Remove</button>
               </div>
+              {slotError && <p className="ac-form-error">{slotError}</p>}
             </div>
           )}
 
@@ -198,7 +261,7 @@ export default function AdminCalendar() {
               <p><span className="ac-bd-key">Date:</span> {selectedBooking.date}</p>
               <p><span className="ac-bd-key">Time:</span> {selectedBooking.time}</p>
               <p><span className="ac-bd-key">Services:</span> {selectedBooking.service}</p>
-              <button className="ac-cancel-booking" onClick={() => setSelectedBooking(null)}>Cancel</button>
+              <button className="ac-cancel-booking" onClick={handleCancelBooking}>Cancel</button>
             </div>
           )}
         </div>

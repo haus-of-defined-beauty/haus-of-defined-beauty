@@ -2,6 +2,13 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './RescheduleModal.css';
 
+function minSelectableDate() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1); // bookings must be made at least a day in advance
+  const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 function RescheduleModal({ booking, onClose, onSuccess }) {
   const [date, setDate] = useState('');
   const [slots, setSlots] = useState([]);
@@ -12,7 +19,7 @@ function RescheduleModal({ booking, onClose, onSuccess }) {
   useEffect(() => {
     if (!date) { setSlots([]); setTime(''); return; }
     axios.get(`/api/calendar/${date}`)
-      .then(res => setSlots(res.data.availableSlots || []))
+      .then(res => setSlots((res.data.slots || []).filter(s => s.status === 'available').map(s => s.start)))
       .catch(() => setSlots([]));
   }, [date]);
 
@@ -21,10 +28,26 @@ function RescheduleModal({ booking, onClose, onSuccess }) {
     setError('');
     setLoading(true);
     try {
-      await axios.put(`/api/bookings/${booking._id}`, { date, time });
+      await axios.put(`/api/bookings/${booking._id}/reschedule`, { date, time });
       onSuccess();
     } catch (err) {
-      setError(err.response?.data?.message || 'Reschedule failed.');
+      if (err.response?.data?.code === 'SLOT_UNAVAILABLE') {
+        setError('SLOT_UNAVAILABLE');
+      } else {
+        setError(err.response?.data?.message || 'Reschedule failed.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelInstead = async () => {
+    setLoading(true);
+    try {
+      await axios.patch(`/api/bookings/${booking._id}/cancel`);
+      onSuccess();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Cancel failed.');
     } finally {
       setLoading(false);
     }
@@ -51,7 +74,7 @@ function RescheduleModal({ booking, onClose, onSuccess }) {
             <input
               type="date"
               value={date}
-              min={new Date().toISOString().split('T')[0]}
+              min={minSelectableDate()}
               onChange={e => setDate(e.target.value)}
               required
             />
@@ -59,16 +82,25 @@ function RescheduleModal({ booking, onClose, onSuccess }) {
 
           <label>New Time Slot
             <select value={time} onChange={e => setTime(e.target.value)} required disabled={!slots.length}>
-              <option value="">{slots.length ? 'Select a time slot…' : 'Pick a date first'}</option>
+              <option value="">
+                {!date ? 'Pick a date first' : slots.length ? 'Select a time slot…' : 'No slots available'}
+              </option>
               {slots.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </label>
 
-          {error && <p className="modal-error">{error}</p>}
+          {error === 'SLOT_UNAVAILABLE' || (date && !slots.length) ? (
+            <div className="modal-error">
+              <p>No matching time slot available for your needs.</p>
+              <button type="button" className="btn-outline" onClick={handleCancelInstead} disabled={loading}>
+                Cancel this booking instead
+              </button>
+            </div>
+          ) : error && <p className="modal-error">{error}</p>}
 
           <div className="modal-actions">
             <button type="button" className="btn-outline" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn-primary" disabled={loading}>
+            <button type="submit" className="btn-primary" disabled={loading || !slots.length}>
               {loading ? 'Saving…' : 'Confirm Reschedule'}
             </button>
           </div>

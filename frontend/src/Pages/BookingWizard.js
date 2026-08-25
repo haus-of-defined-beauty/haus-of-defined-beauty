@@ -1,32 +1,19 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import axios from 'axios';
+import logo from '../assets/logo.jpeg';
 import './BookingWizard.css';
 
 const STEPS = ['SELECT SERVICES', 'CONFIRMATION', 'PAYMENT'];
-const BOOKING_FEE = 200;
+const BOOKING_FEE = 100;
 
-const MOCK_SERVICES = {
-  'Hair Services': [
-    { id: 'h1', name: 'Basic Install', duration: 90 },
-    { id: 'h2', name: 'Style & Install', duration: 60 },
-    { id: 'h3', name: 'Frontal Pony (Your Hair)', duration: 30 },
-    { id: 'h4', name: 'Frontal Pony (Hair)', duration: 45 },
-  ],
-  'Nail Services': [
-    { id: 'n1', name: 'Plain Gel', duration: 30 },
-    { id: 'n2', name: 'Plain Acrylic', duration: 60 },
-    { id: 'n3', name: 'Plain Polygel', duration: 40 },
-    { id: 'n4', name: 'Gel Toes', duration: 45 },
-  ],
-  'Makeup & Lashes': [
-    { id: 'm1', name: 'Full Glam', duration: 60 },
-    { id: 'm2', name: 'Natural Look', duration: 45 },
-    { id: 'm3', name: 'Lash Application', duration: 30 },
-  ],
+const CATEGORY_LABELS = {
+  hair: 'Hair Services',
+  nails: 'Nail Services',
+  makeup: 'Makeup & Lashes',
+  lashes: 'Makeup & Lashes',
+  masterclass: 'Masterclass',
 };
-
-const DEMO_SLOTS = ['09:00', '10:00', '11:00', '13:00', '14:00', '16:00'];
-const DEMO_BOOKED = { '10:00': 'Style & Install' };
 
 function fmt(minutes) {
   if (minutes < 60) return `${minutes}mins`;
@@ -39,6 +26,13 @@ function addMins(time, mins) {
   const [h, m] = time.split(':').map(Number);
   const total = h * 60 + m + mins;
   return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+}
+
+function isoDate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 function getMondayOf(date) {
@@ -59,18 +53,77 @@ function getWeekDays(start) {
 
 export default function BookingWizard() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   const [step, setStep] = useState(0);
   const [cart, setCart] = useState([]);
+  const [services, setServices] = useState({});
   const [expanded, setExpanded] = useState({});
   const [showSlots, setShowSlots] = useState(false);
   const [activeService, setActiveService] = useState(null);
   const [weekStart, setWeekStart] = useState(getMondayOf(new Date()));
   const [selectedDay, setSelectedDay] = useState(new Date());
+  const [daySlots, setDaySlots] = useState([]);
 
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
+  const [groupId, setGroupId] = useState(null);
+
+  const [paying, setPaying] = useState(false);
+  const [polling, setPolling] = useState(false);
+  const [paymentResult, setPaymentResult] = useState(null); // null | 'success' | 'failed' | 'gateway-cancelled'
 
   const weekDays = getWeekDays(weekStart);
+
+  useEffect(() => {
+    axios.get('/api/bookings/services').then(res => {
+      const grouped = {};
+      for (const s of res.data) {
+        const label = CATEGORY_LABELS[s.category] || s.category;
+        (grouped[label] = grouped[label] || []).push(s);
+      }
+      setServices(grouped);
+    }).catch(() => setServices({}));
+  }, []);
+
+  useEffect(() => {
+    axios.get(`/api/calendar/${isoDate(selectedDay)}`)
+      .then(res => setDaySlots(res.data.slots || []))
+      .catch(() => setDaySlots([]));
+  }, [selectedDay]);
+
+  // Handles landing back here after a PayFast redirect (return_url/cancel_url).
+  // Local state (cart, step) is gone on a fresh page load, so this rebuilds
+  // just enough from the URL to show the right outcome screen.
+  useEffect(() => {
+    const paymentParam = searchParams.get('payment');
+    const groupIdParam = searchParams.get('groupId');
+    if (!paymentParam || !groupIdParam) return;
+
+    setGroupId(groupIdParam);
+    setStep(2);
+
+    if (paymentParam === 'cancel') {
+      setPaymentResult('gateway-cancelled');
+      return;
+    }
+
+    if (paymentParam === 'return') {
+      setPolling(true);
+      let attempts = 0;
+      const poll = () => {
+        axios.get(`/api/payments/group/${groupIdParam}`).then(res => {
+          const status = res.data.payment?.status;
+          if (status === 'successful') { setPaymentResult('success'); setPolling(false); }
+          else if (status === 'failed') { setPaymentResult('failed'); setPolling(false); }
+          else if (attempts < 5) { attempts += 1; setTimeout(poll, 2000); }
+          else { setPolling(false); }
+        }).catch(() => setPolling(false));
+      };
+      poll();
+    }
+  }, []);
 
   function weekLabel() {
     const end = new Date(weekStart);
@@ -90,8 +143,14 @@ export default function BookingWizard() {
 
   function selectSlot(time) {
     if (!activeService) return;
-    const entry = { service: activeService, date: dateLabel(selectedDay), time, endTime: addMins(time, activeService.duration) };
-    const idx = cart.findIndex(c => c.service.id === activeService.id);
+    const entry = {
+      service: activeService,
+      isoDate: isoDate(selectedDay),
+      date: dateLabel(selectedDay),
+      time,
+      endTime: addMins(time, activeService.duration),
+    };
+    const idx = cart.findIndex(c => c.service._id === activeService._id);
     if (idx >= 0) { const u = [...cart]; u[idx] = entry; setCart(u); }
     else setCart(c => [...c, entry]);
     setActiveService(null);
@@ -101,8 +160,71 @@ export default function BookingWizard() {
   function editItem(item) { setActiveService(item.service); setShowSlots(true); }
 
   function inCart(time) {
-    const date = dateLabel(selectedDay);
-    return cart.some(c => c.time === time && c.date === date);
+    const iso = isoDate(selectedDay);
+    return cart.some(c => c.time === time && c.isoDate === iso);
+  }
+
+  async function handleContinue() {
+    setCreateError('');
+    setStep(1);
+  }
+
+  async function handleConfirmBooking() {
+    setCreateError('');
+    setCreating(true);
+    try {
+      const items = cart.map(c => ({ serviceId: c.service._id, date: c.isoDate, time: c.time }));
+      const res = await axios.post('/api/bookings', { items });
+      setGroupId(res.data.groupId);
+      setStep(2);
+    } catch (err) {
+      const conflict = err.response?.data?.item;
+      if (err.response?.status === 409 && conflict) {
+        setCart(c => c.filter(ci => !(
+          ci.service._id === conflict.serviceId && ci.isoDate === conflict.date && ci.time === conflict.time
+        )));
+        setCreateError(`${err.response.data.message || 'That slot is no longer available.'} Please pick a new time.`);
+      } else {
+        setCreateError(err.response?.data?.message || 'Failed to create booking. Please try again.');
+      }
+      setStep(0);
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  async function handlePayNow() {
+    setPaying(true);
+    setCreateError('');
+    try {
+      const res = await axios.post('/api/payments/initiate', { groupId });
+      const { processUrl, fields } = res.data;
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = processUrl;
+      Object.entries(fields).forEach(([key, value]) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = value;
+        form.appendChild(input);
+      });
+      document.body.appendChild(form);
+      form.submit();
+      // browser navigates away to PayFast here — no need to reset `paying`
+    } catch (err) {
+      setPaying(false);
+      setCreateError(err.response?.data?.message || 'Could not start payment.');
+    }
+  }
+
+  async function handleCancelGroup() {
+    try {
+      await axios.delete(`/api/bookings/group/${groupId}`);
+    } catch (err) {
+      // best-effort — still navigate away
+    }
+    navigate('/customer');
   }
 
   function CartCard({ actions = true }) {
@@ -112,6 +234,7 @@ export default function BookingWizard() {
           <span className="bw-cart-title">Your Booking:</span>
           {cart.length === 0 && <span className="bw-cart-empty">No services selected</span>}
         </div>
+        {createError && <p className="bw-error">{createError}</p>}
         {cart.map((item, i) => (
           <div key={i} className="bw-cart-item">
             <div className="bw-cart-info">
@@ -130,7 +253,7 @@ export default function BookingWizard() {
         {actions && (
           <div className="bw-cart-btns">
             <button className="bw-btn-outline" onClick={() => navigate('/customer')}>Cancel Booking</button>
-            <button className="bw-btn-dark" disabled={cart.length === 0} onClick={() => setStep(s => s + 1)}>Continue</button>
+            <button className="bw-btn-dark" disabled={cart.length === 0} onClick={handleContinue}>Continue</button>
           </div>
         )}
       </div>
@@ -144,7 +267,7 @@ export default function BookingWizard() {
         <div className={`bw-step1-body${showSlots ? ' with-slots' : ''}`}>
           <div className="bw-services">
             <h3 className="bw-section-title">Add your Service</h3>
-            {Object.entries(MOCK_SERVICES).map(([cat, svcs]) => (
+            {Object.entries(services).map(([cat, svcs]) => (
               <div key={cat} className="bw-category">
                 <button className="bw-cat-header" onClick={() => setExpanded(e => ({ ...e, [cat]: !e[cat] }))}>
                   <span>{cat}</span>
@@ -153,9 +276,9 @@ export default function BookingWizard() {
                 {expanded[cat] && (
                   <div className="bw-svc-list">
                     {svcs.map(s => {
-                      const active = activeService?.id === s.id || cart.some(c => c.service.id === s.id);
+                      const active = activeService?._id === s._id || cart.some(c => c.service._id === s._id);
                       return (
-                        <div key={s.id} className={`bw-svc-row${active ? ' selected' : ''}`} onClick={() => selectService(s)}>
+                        <div key={s._id} className={`bw-svc-row${active ? ' selected' : ''}`} onClick={() => selectService(s)}>
                           <span>{s.name}<span className="bw-dur"> - {fmt(s.duration)}</span></span>
                           <span className={`bw-radio${active ? ' filled' : ''}`} />
                         </div>
@@ -177,29 +300,32 @@ export default function BookingWizard() {
                 <button className="bw-cal-icon">&#128197;</button>
               </div>
               <div className="bw-day-strip">
-                {weekDays.map((d, i) => (
-                  <button key={i}
-                    className={`bw-day-btn${d.toDateString() === selectedDay.toDateString() ? ' active' : ''}`}
-                    onClick={() => setSelectedDay(d)}
-                  >{d.getDate()}</button>
-                ))}
+                {weekDays.map((d, i) => {
+                  const disabled = isoDate(d) <= isoDate(new Date());
+                  return (
+                    <button key={i}
+                      className={`bw-day-btn${d.toDateString() === selectedDay.toDateString() ? ' active' : ''}`}
+                      disabled={disabled}
+                      onClick={() => !disabled && setSelectedDay(d)}
+                    >{d.getDate()}</button>
+                  );
+                })}
               </div>
               <div className="bw-slot-list">
-                {DEMO_SLOTS.map(time => {
-                  const booked = DEMO_BOOKED[time];
-                  const picked = inCart(time);
-                  const end = activeService ? addMins(time, activeService.duration) : '';
+                {daySlots.filter(s => s.status === 'available').map(slot => {
+                  const picked = inCart(slot.start);
+                  const end = activeService ? addMins(slot.start, activeService.duration) : '';
                   return (
-                    <div key={time}
-                      className={`bw-slot${booked ? ' booked' : ''}${picked ? ' picked' : ''}`}
-                      onClick={() => !booked && selectSlot(time)}
+                    <div key={slot._id}
+                      className={`bw-slot${picked ? ' picked' : ''}`}
+                      onClick={() => selectSlot(slot.start)}
                     >
-                      <span>{time}{end ? ` - ${end}` : ''}</span>
-                      {booked && <span className="bw-slot-svc">{booked}</span>}
-                      {!booked && !picked && <span className="bw-slot-add">+</span>}
+                      <span>{slot.start}{end ? ` - ${end}` : ''}</span>
+                      {!picked && <span className="bw-slot-add">+</span>}
                     </div>
                   );
                 })}
+                {!daySlots.some(s => s.status === 'available') && <div className="bw-slot">No slots available for this day</div>}
               </div>
             </div>
           )}
@@ -227,13 +353,59 @@ export default function BookingWizard() {
         ))}
         <div className="bw-confirm-btns">
           <button className="bw-btn-outline" onClick={() => navigate('/customer')}>Cancel Booking</button>
-          <button className="bw-btn-dark" onClick={() => setStep(2)}>Confirm</button>
+          <button className="bw-btn-dark" disabled={creating} onClick={handleConfirmBooking}>
+            {creating ? 'Confirming…' : 'Confirm'}
+          </button>
         </div>
       </div>
     );
   }
 
   function Step4() {
+    if (polling) {
+      return (
+        <div className="bw-confirm-card">
+          <div className="bw-confirm-top">
+            <h2 className="bw-confirm-title">Confirming your payment…</h2>
+          </div>
+          <p>This should only take a moment.</p>
+        </div>
+      );
+    }
+
+    if (paymentResult === 'success') {
+      return (
+        <div className="bw-confirm-card bw-success-card">
+          <div className="bw-success-icon">✓</div>
+          <h2 className="bw-confirm-title">Payment Successful</h2>
+          <p>Your booking is confirmed. See you soon!</p>
+          <div className="bw-confirm-btns">
+            <button className="bw-btn-dark" onClick={() => navigate('/customer')}>Done</button>
+          </div>
+        </div>
+      );
+    }
+
+    if (paymentResult === 'failed' || paymentResult === 'gateway-cancelled') {
+      return (
+        <div className="bw-confirm-card">
+          <div className="bw-confirm-top">
+            <h2 className="bw-confirm-title">{paymentResult === 'gateway-cancelled' ? 'Payment Cancelled' : 'Payment Unsuccessful'}</h2>
+          </div>
+          <p>{paymentResult === 'gateway-cancelled'
+            ? 'You cancelled the payment before it completed.'
+            : 'Please update your payment info or try a different method.'}</p>
+          {createError && <p className="bw-error">{createError}</p>}
+          <div className="bw-confirm-btns">
+            <button className="bw-btn-outline" disabled={paying} onClick={handleCancelGroup}>Cancel Booking</button>
+            <button className="bw-btn-dark" disabled={paying} onClick={handlePayNow}>
+              {paying ? 'Redirecting…' : 'Try Again'}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="bw-confirm-card">
         <div className="bw-confirm-top">
@@ -246,9 +418,12 @@ export default function BookingWizard() {
             <div className="bw-cart-dt">{item.date}, {item.time} - {item.endTime}</div>
           </div>
         ))}
+        {createError && <p className="bw-error">{createError}</p>}
         <div className="bw-confirm-btns">
-          <button className="bw-btn-outline" onClick={() => navigate('/customer')}>Cancel Booking</button>
-          <button className="bw-btn-dark" onClick={() => { alert('Redirecting to payment gateway… (prototype)'); navigate('/customer'); }}>Pay Now</button>
+          <button className="bw-btn-outline" disabled={paying} onClick={handleCancelGroup}>Cancel Booking</button>
+          <button className="bw-btn-dark" disabled={paying} onClick={handlePayNow}>
+            {paying ? 'Redirecting…' : 'Pay Now'}
+          </button>
         </div>
       </div>
     );
@@ -258,9 +433,7 @@ export default function BookingWizard() {
     <div className="bw-page">
       <header className="bw-header">
         <div className="bw-logo-box">
-          <span className="bw-logo-l1">HAUS OF DEFINED</span>
-          <span className="bw-logo-l2">BEAUTY</span>
-          <span className="bw-logo-l3">BEAUTY SALON</span>
+          <img src={logo} alt="Haus of Defined Beauty" className="bw-logo-img" />
         </div>
         <div className="bw-header-center">
           <div className="bw-header-name">{user.name || 'Jane Doe'}</div>
