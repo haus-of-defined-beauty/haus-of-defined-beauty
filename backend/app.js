@@ -1,8 +1,9 @@
 require('dotenv').config();
-// This environment's default DNS resolver refuses SRV-type queries (needed
+// The local dev machine's default DNS resolver refuses SRV-type queries (needed
 // for the mongodb+srv:// connection string), even though the record itself
 // resolves fine elsewhere — pointing Node at a public resolver works around it.
-require('dns').setServers(['8.8.8.8', '1.1.1.1']);
+// Hosted environments resolve it fine, so this is skipped in production.
+if (process.env.NODE_ENV !== 'production') require('dns').setServers(['8.8.8.8', '1.1.1.1']);
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
