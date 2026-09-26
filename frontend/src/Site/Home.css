@@ -1,0 +1,218 @@
+/* ── Hero ── */
+.home-hero {
+  position: relative;
+  background: #b89a82; /* matches the photo's own backdrop so it blends */
+  min-height: min(92vh, 780px);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+}
+
+.home-hero::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 40%;
+  background: linear-gradient(to bottom, rgba(47, 47, 47, 0), #2f2f2f);
+  pointer-events: none;
+}
+
+.home-hero-media { position: relative; }
+
+.home-hero-media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 10%;
+  -webkit-mask-image: linear-gradient(to right, #000 86%, transparent);
+  mask-image: linear-gradient(to right, #000 86%, transparent);
+}
+
+.home-hero-copy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 0 clamp(1.5rem, 5vw, 5rem) 8%;
+}
+
+.home-hero-copy h1 {
+  font-family: var(--serif);
+  font-weight: 400;
+  color: #fff;
+  font-size: clamp(3rem, 6.2vw, 6rem);
+  line-height: 0.98;
+  letter-spacing: -0.01em;
+  margin-bottom: 1.6rem;
+}
+
+/* ── Intro on marble ── */
+.home-intro {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 2rem;
+  min-height: 440px;
+  padding: 4rem clamp(1.5rem, 6vw, 6rem);
+  color: #fff;
+}
+
+.home-intro-copy { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1.6rem; }
+
+.home-intro-copy p {
+  max-width: 420px;
+  font-family: var(--mono);
+  font-size: clamp(0.95rem, 1.5vw, 1.25rem);
+  letter-spacing: 0.1em;
+  line-height: 1.7;
+}
+
+.home-polaroids { position: relative; height: 380px; }
+
+.polaroid.p1 img { object-position: 50% 40%; }
+.polaroid.p2 img { object-position: 50% 30%; }
+.polaroid.p1 { top: 0; left: 8%; transform: rotate(-9deg); }
+.polaroid.p2 { top: 22%; left: 46%; transform: rotate(7deg); }
+.polaroid.p3 { top: 48%; left: 16%; transform: rotate(-6deg); }
+
+/* ── Services ── */
+.home-services { padding: 4.5rem clamp(1.25rem, 5vw, 4rem) 4rem; background: #fff; }
+
+.home-services h2,
+.home-testimonials h2 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(2rem, 3.4vw, 2.8rem);
+  text-align: center;
+}
+
+.home-services-sub {
+  max-width: 520px;
+  margin: 0.6rem auto 2.5rem;
+  text-align: center;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: #555;
+}
+
+.svc-card {
+  display: grid;
+  grid-template-columns: 41% 1fr;
+  max-width: 940px;
+  margin: 1.6rem auto;
+  border: 1px solid #ececec;
+  background: #fff;
+}
+.svc-card.flip { grid-template-columns: 1fr 41%; }
+.svc-card.flip .svc-media { order: 2; }
+.svc-media { aspect-ratio: 1 / 1; overflow: hidden; }
+.svc-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.svc-body { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 2rem clamp(1.5rem, 4vw, 3rem); }
+.svc-body h3 { font-family: var(--serif); font-weight: 500; font-size: 2.1rem; margin-bottom: 0.9rem; }
+.svc-body p { font-size: 0.78rem; line-height: 1.65; color: #333; margin-bottom: 1.2rem; }
+
+.svc-more {
+  font-family: var(--serif);
+  font-size: 1rem;
+  font-weight: 600;
+  border-bottom: 2px solid #f1dc8a;
+  transition: border-color 0.2s;
+}
+.svc-more:hover { border-bottom-color: var(--gold); }
+
+.home-services-cta { text-align: center; margin-top: 2.5rem; }
+
+/* ── Masterclass banner ── */
+.home-masterclass {
+  min-height: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 1rem;
+  padding: 4rem 1.5rem;
+  color: #fff;
+  background:
+    linear-gradient(rgba(12, 12, 12, 0.42), rgba(12, 12, 12, 0.55)),
+    #1d1a18 url('../assets/home/masterclass.jpg') 50% 45% / cover no-repeat;
+}
+.home-masterclass h2 { font-family: var(--serif); font-weight: 400; font-size: clamp(2.4rem, 5vw, 3.8rem); }
+.home-masterclass p { max-width: 460px; font-size: 0.8rem; line-height: 1.65; color: #e6e0da; }
+
+/* ── Testimonials ── */
+.home-testimonials { padding: 4.5rem 1.25rem 5rem; background: #fff; }
+
+.testi-wrap {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  max-width: 920px;
+  margin: 2.2rem auto 0;
+}
+
+.testi-arrow {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border: none;
+  background: none;
+  font-size: 2rem;
+  line-height: 1;
+  color: #888;
+  cursor: pointer;
+}
+.testi-arrow:hover { color: #1c1c1c; }
+
+.testi-card {
+  position: relative;
+  flex: 1;
+  display: grid;
+  grid-template-columns: 210px 1fr;
+  gap: 1.75rem;
+  align-items: center;
+  padding: 1.75rem 2.25rem;
+  border: 1px solid #ddd;
+  background: #fff;
+}
+.testi-photo { height: 180px; }
+.testi-body p { font-size: 0.82rem; line-height: 1.7; color: #333; margin-bottom: 0.8rem; }
+.testi-name { font-family: var(--serif); font-size: 1rem; font-weight: 600; }
+
+.testi-quote {
+  position: absolute;
+  font-family: var(--serif);
+  font-size: 4rem;
+  line-height: 1;
+  color: #e7c24a;
+}
+.testi-quote--open { top: 0.2rem; left: 0.9rem; }
+.testi-quote--close { bottom: -0.6rem; right: 0.9rem; }
+
+/* ── Tablet / mobile ── */
+@media (max-width: 820px) {
+  .home-hero { display: block; min-height: 660px; }
+  .home-hero-media { position: absolute; inset: 4.75rem 0 0 0; }
+  .home-hero-media img { object-position: 50% 0%; -webkit-mask-image: none; mask-image: none; }
+  .home-hero-copy { position: absolute; left: 0; right: 0; bottom: 0; padding: 0 1.5rem 2.5rem; }
+  .home-hero-copy h1 { font-size: clamp(2.6rem, 11vw, 3.6rem); }
+
+  .home-intro { grid-template-columns: 1fr; padding: 3.5rem 1.5rem; }
+  .home-polaroids { height: 340px; max-width: 420px; width: 100%; margin: 0 auto; }
+
+  .svc-card,
+  .svc-card.flip { grid-template-columns: 1fr; }
+  .svc-card.flip .svc-media { order: 0; }
+  .svc-media { aspect-ratio: 1 / 1; }
+
+  .testi-card { grid-template-columns: 1fr; padding: 2.25rem 1.5rem 2rem; }
+  .testi-photo { height: 200px; }
+  .testi-arrow { width: 28px; }
+}

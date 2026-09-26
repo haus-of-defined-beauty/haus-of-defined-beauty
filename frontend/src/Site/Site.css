@@ -1,0 +1,209 @@
+.site {
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --mono: 'Space Mono', ui-monospace, monospace;
+  --sans: 'Inter', system-ui, sans-serif;
+  --charcoal: #2b2b2b;
+  --tan: #b89a82;
+  --gold: #c4a882;
+  font-family: var(--sans);
+  color: #1c1c1c;
+  background: #fff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.site main { flex: 1; }
+.site a { color: inherit; text-decoration: none; }
+
+/* Charcoal marble surface used behind dark sections. */
+.site-marble {
+  background-color: #303030;
+  background-image:
+    radial-gradient(ellipse 60% 50% at 18% 25%, rgba(255, 255, 255, 0.07), transparent 70%),
+    radial-gradient(ellipse 55% 60% at 85% 80%, rgba(0, 0, 0, 0.35), transparent 70%),
+    radial-gradient(ellipse 40% 35% at 60% 15%, rgba(255, 255, 255, 0.05), transparent 70%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='600'><filter id='n' x='0' y='0' width='100%' height='100%'><feTurbulence type='fractalNoise' baseFrequency='0.008 0.014' numOctaves='5' seed='11' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 1.1 0 0 0 -0.42'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='.3'/></svg>");
+  background-size: auto, auto, auto, 600px 600px;
+}
+
+/* ── Buttons ── */
+.site-btn {
+  display: inline-block;
+  padding: 0.5rem 1.7rem;
+  border: none;
+  cursor: pointer;
+  font-family: var(--serif);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: background 0.2s, color 0.2s, transform 0.1s;
+}
+.site-btn:active { transform: scale(0.98); }
+.site .site-btn--light { background: #fff; color: #111; }
+.site .site-btn--light:hover { background: var(--gold); }
+.site .site-btn--dark { background: var(--charcoal); color: #fff; }
+.site .site-btn--dark:hover { background: var(--gold); color: #111; }
+
+/* ── Placeholder tile (until the real photo is supplied) ── */
+.site-ph {
+  width: 100%;
+  height: 100%;
+  min-height: 120px;
+  background: #ececec;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.site-ph svg { width: 34px; height: 34px; stroke: #8b8fd6; fill: none; stroke-width: 2; }
+
+/* ── Logo (bordered wordmark box + pill) ── */
+.site-logo { display: inline-flex; flex-direction: column; align-items: center; font-size: 1rem; }
+.site-logo-box {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  padding: 0.6em 1.1em 1em;
+  color: #fff;
+  font-family: var(--serif);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  line-height: 1.15;
+}
+.site-logo-l1 { font-size: 0.62em; font-weight: 500; }
+.site-logo-l2 { font-size: 0.98em; font-weight: 600; }
+.site-logo-pill {
+  position: absolute;
+  bottom: -0.55em;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: #fff;
+  color: #111;
+  font-family: var(--sans);
+  font-size: 0.4em;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  padding: 0.35em 1.1em;
+  border-radius: 20px;
+}
+.site-logo-tagline {
+  margin-top: 1.1em;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.8em;
+  color: #cfcfcf;
+}
+
+/* ── Nav (sits transparently over each page's hero) ── */
+.site-nav {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.5rem clamp(1.25rem, 4vw, 3.5rem);
+}
+.site-nav-links { display: flex; align-items: center; gap: 2.2rem; }
+.site-nav-links a,
+.site-nav-profile {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-weight: 500;
+  padding: 0.15rem 0;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+.site-nav-links a:hover,
+.site-nav-profile:hover,
+.site-nav-links a.active { border-bottom-color: #fff; }
+
+.site-nav-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+}
+.site-nav-toggle span { width: 24px; height: 2px; background: #fff; }
+
+/* ── Footer ── */
+.site-footer {
+  background: #3a3a3a;
+  color: #e8e8e8;
+  padding: 2.75rem clamp(1.25rem, 4vw, 3.5rem);
+}
+.site-footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1.2fr;
+  gap: 2rem;
+  align-items: start;
+}
+.site-footer .site-logo { font-size: 1.5rem; }
+.site-footer-col h6 {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.7rem;
+}
+.site-footer-col svg { width: 14px; height: 14px; fill: currentColor; flex-shrink: 0; }
+.site-footer-col p,
+.site-footer-col a {
+  display: block;
+  font-size: 0.78rem;
+  line-height: 1.7;
+  color: #cfcfcf;
+}
+.site-footer-col a:hover { color: #fff; }
+.site-footer-line { display: flex !important; align-items: center; gap: 0.5rem; }
+
+/* ── Polaroid photo frame (positioned per page) ── */
+.polaroid {
+  position: absolute;
+  width: 210px;
+  padding: 12px 12px 46px;
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+}
+.polaroid img { display: block; width: 100%; height: 175px; object-fit: cover; }
+
+@media (max-width: 820px) {
+  .polaroid { width: 170px; padding: 10px 10px 38px; }
+  .polaroid img { height: 140px; }
+  .site-nav-toggle { display: flex; }
+  .site-nav-links {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem clamp(1.25rem, 4vw, 3.5rem) 1.5rem;
+    background: rgba(28, 28, 28, 0.99);
+  }
+  .site-nav-links.open { display: flex; }
+  .site-footer-inner { grid-template-columns: 1fr 1fr; }
+  .site-footer-brand { grid-column: 1 / -1; }
+}
+
+@media (max-width: 520px) {
+  .site-footer-inner { grid-template-columns: 1fr; }
+}
