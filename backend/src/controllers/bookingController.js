@@ -165,11 +165,15 @@ const rescheduleBooking = async (req, res) => {
     const admins = await Admin.find().select('email');
     const serviceName = service?.name || 'Service';
     const dateLabel = new Date(date).toLocaleDateString('en-ZA');
-    admins.forEach(a => notify(
-      a.email,
-      `${customer?.name || 'A customer'} rescheduled ${serviceName} to ${dateLabel} at ${time}.`
-    ));
-    notify(customer?.email, `Your ${serviceName} booking was rescheduled to ${dateLabel} at ${time}.`);
+    // Awaited: a serverless function is frozen once it responds, so emails still
+    // in flight at that point would never be sent. notify() never throws.
+    await Promise.all([
+      ...admins.map(a => notify(
+        a.email,
+        `${customer?.name || 'A customer'} rescheduled ${serviceName} to ${dateLabel} at ${time}.`
+      )),
+      notify(customer?.email, `Your ${serviceName} booking was rescheduled to ${dateLabel} at ${time}.`),
+    ]);
 
     res.json(await booking.populate('serviceId'));
   } catch (err) {

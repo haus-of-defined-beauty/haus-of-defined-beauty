@@ -96,14 +96,18 @@ const payfastNotify = async (req, res) => {
         .join('; ');
       const admins = await Admin.find().select('email');
 
-      admins.forEach(a => notify(
-        a.email,
-        `Payment received for ${customer?.name || 'a customer'}, booking confirmed for ${dateTimeList}.`
-      ));
-      notify(
-        customer?.email,
-        `Your payment was received, booking confirmed for ${dateTimeList}. See you soon!`
-      );
+      // Awaited: a serverless function is frozen once it responds, so emails still
+      // in flight at that point would never be sent. notify() never throws.
+      await Promise.all([
+        ...admins.map(a => notify(
+          a.email,
+          `Payment received for ${customer?.name || 'a customer'}, booking confirmed for ${dateTimeList}.`
+        )),
+        notify(
+          customer?.email,
+          `Your payment was received, booking confirmed for ${dateTimeList}. See you soon!`
+        ),
+      ]);
     } else if (payment_status === 'FAILED' || payment_status === 'CANCELLED') {
       payment.status = 'failed';
       payment.gatewayReference = pf_payment_id;

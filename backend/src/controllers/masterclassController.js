@@ -44,7 +44,9 @@ const apply = async (req, res) => {
     await MasterclassApplication.create({ name: n, surname: s, email: e });
 
     const admins = await Admin.find().select('email');
-    admins.forEach(a => notify(a.email, `New masterclass application from ${n} ${s} (${e}).`));
+    // Awaited: a serverless function is frozen once it responds, so emails still
+    // in flight at that point would never be sent. notify() never throws.
+    await Promise.all(admins.map(a => notify(a.email, `New masterclass application from ${n} ${s} (${e}).`)));
 
     res.status(201).json({ message: 'Application received' });
   } catch (err) {
