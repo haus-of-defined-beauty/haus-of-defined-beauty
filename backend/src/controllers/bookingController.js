@@ -3,10 +3,23 @@ const Booking = require('../models/Booking');
 const Service = require('../models/Service');
 const Customer = require('../models/Customer');
 const Admin = require('../models/Admin');
+const Payment = require('../models/Payment');
 const notify = require('../utils/notify');
 const { getOrCreateDay, findCoveredSlots, reserveSlot, releaseSlot } = require('../utils/calendarSlots');
 
 const CANCELLATION_WINDOW_HOURS = 24;
+
+// A cancelled booking whose group fee was actually paid needs to show up on
+// the admin's "awaiting refund" list — this only flags it (refundStatus:
+// 'pending'); the admin marks it refunded once the money's actually back
+// with the customer.
+async function flagRefundIfPaid(groupId) {
+  const payment = await Payment.findOne({ groupId, status: 'successful' }).sort({ createdAt: -1 });
+  if (payment && payment.refundStatus === 'none') {
+    payment.refundStatus = 'pending';
+    await payment.save();
+  }
+}
 
 function isoToday() {
   const d = new Date();
@@ -96,6 +109,7 @@ const updateBooking = async (req, res) => {
     // be freed, or it stays stuck "booked" forever with nothing pointing at it.
     if (patch.status === 'cancelled' && booking.status !== 'cancelled') {
       await releaseSlot(booking.date, booking._id);
+      await flagRefundIfPaid(booking.groupId);
     }
 
     const updated = await Booking.findByIdAndUpdate(req.params.id, patch, { new: true });
@@ -181,6 +195,7 @@ const cancelBooking = async (req, res) => {
     booking.status = 'cancelled';
     await releaseSlot(booking.date, booking._id);
     await booking.save();
+    await flagRefundIfPaid(booking.groupId);
     res.json({ message: 'Booking cancelled', booking });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -197,6 +212,7 @@ const cancelBookingGroup = async (req, res) => {
       b.status = 'cancelled';
       await b.save();
     }
+    await flagRefundIfPaid(bookings[0].groupId);
     res.json({ message: 'Booking cancelled', count: bookings.length });
   } catch (err) {
     res.status(500).json({ message: err.message });

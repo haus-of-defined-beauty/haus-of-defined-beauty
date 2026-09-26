@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Dashboard from './Dashboard';
 import BookingList from './BookingList';
 import Reports from './Reports';
 import ProfilePanel from './ProfilePanel';
 import logo from '../assets/logo.jpeg';
 import './Admin.css';
 
-const TABS = ['Bookings', 'Calendar', 'Reports', 'Profile'];
+const TABS = ['Dashboard', 'Bookings', 'Calendar', 'Reports', 'Profile'];
 
 function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState('Bookings');
+  const [activeTab, setActiveTab] = useState('Dashboard');
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -21,6 +22,7 @@ function AdminDashboard() {
 
   const renderTab = () => {
     switch (activeTab) {
+      case 'Dashboard': return <Dashboard />;
       case 'Bookings': return <BookingList isAdmin />;
       case 'Reports': return <Reports />;
       case 'Profile': return <ProfilePanel isAdmin />;

@@ -1,4 +1,8 @@
 require('dotenv').config();
+// This environment's default DNS resolver refuses SRV-type queries (needed
+// for the mongodb+srv:// connection string), even though the record itself
+// resolves fine elsewhere — pointing Node at a public resolver works around it.
+require('dns').setServers(['8.8.8.8', '1.1.1.1']);
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -10,6 +14,8 @@ const bookingRoutes = require('./src/routes/bookingRoutes');
 const calendarRoutes = require('./src/routes/calendarRoutes');
 const paymentRoutes = require('./src/routes/paymentRoutes');
 const reportRoutes = require('./src/routes/reportRoutes');
+const dashboardRoutes = require('./src/routes/dashboardRoutes');
+const masterclassRoutes = require('./src/routes/masterclassRoutes');
 
 const app = express();
 
@@ -34,6 +40,8 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/calendar', calendarRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/masterclass', masterclassRoutes);
 
 app.get('/', (req, res) => res.json({ message: 'Haus of Defined Beauty API' }));
 

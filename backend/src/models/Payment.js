@@ -5,6 +5,7 @@ const paymentSchema = new mongoose.Schema({
   customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', required: true },
   amount: { type: Number, required: true, default: 100 }, // R100 booking fee
   status: { type: String, enum: ['pending', 'successful', 'failed', 'refunded'], default: 'pending' },
+  refundStatus: { type: String, enum: ['none', 'pending', 'refunded'], default: 'none' },
   gatewayReference: { type: String },
   timestamp: { type: Date, default: Date.now },
 }, { timestamps: true });
