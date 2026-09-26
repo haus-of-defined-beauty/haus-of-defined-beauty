@@ -1,0 +1,5 @@
+.env
+.env.*
+bin
+*.log
+node_modules
