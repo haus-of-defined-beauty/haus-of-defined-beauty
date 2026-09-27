@@ -12,17 +12,12 @@ const ADDRESS_QUERY = '764 4th Avenue, Melville, Johannesburg, 2092';
 const MAP_EMBED = `https://www.google.com/maps?q=${encodeURIComponent(ADDRESS_QUERY)}&output=embed`;
 const MAP_LINK = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ADDRESS_QUERY)}`;
 
-// Illustrative examples — swap for your real team's names, roles and photos.
+// Photo still a placeholder — swap in a real one when you have it.
 const TEAM = [
   {
-    name: 'Boitumelo Khumalo',
-    role: 'Founder & Lead Nail Technician',
-    text: 'Boitumelo founded Haus of Defined Beauty to bring salon-quality nail artistry to Melville. She oversees every gel, acrylic and polygel set that leaves the chair, and still does the finer nail-art work herself.',
-  },
-  {
-    name: 'Kagiso Mahlangu',
-    role: 'Hair & Makeup Artist',
-    text: 'Kagiso leads our hair and makeup services, from everyday installs to full glam for events. Trained across both disciplines, she makes sure your hair and makeup are always styled to match.',
+    name: 'Kgodisho Makwala',
+    role: 'Founder',
+    text: 'Kgodisho founded Haus of Defined Beauty to bring salon-quality nail, hair, makeup and lash services to Melville — built around precise, personalised work for every client who sits in the chair.',
   },
 ];
 
@@ -80,7 +75,7 @@ function About() {
         </div>
 
         <section className="about-team">
-          <h2>The Team</h2>
+          <h2>Meet the Founder</h2>
           {TEAM.map((m, i) => (
             <article key={i} className={`team-row ${i % 2 ? 'flip' : ''}`}>
               <div className="team-photo"><Placeholder /></div>
