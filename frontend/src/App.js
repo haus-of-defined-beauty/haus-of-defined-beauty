@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './Site/Home';
 import About from './Site/About';
 import Services from './Site/Services';
@@ -8,7 +8,6 @@ import Login from './Login';
 import AdminDashboard from './Dashboards/Admin';
 import CustomerDashboard from './Dashboards/Customer';
 import BookingWizard from './Pages/BookingWizard';
-import AdminCalendar from './Pages/AdminCalendar';
 import './App.css';
 
 function App() {
@@ -21,7 +20,9 @@ function App() {
         <Route path="/masterclasses" element={<Masterclasses />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/calendar" element={<AdminCalendar />} />
+        {/* Calendar is now the "Calendar" tab inside /admin (see Admin.js) —
+            this keeps any old bookmarks/links working. */}
+        <Route path="/admin/calendar" element={<Navigate to="/admin" replace />} />
         <Route path="/customer" element={<CustomerDashboard />} />
         <Route path="/customer/book" element={<BookingWizard />} />
       </Routes>

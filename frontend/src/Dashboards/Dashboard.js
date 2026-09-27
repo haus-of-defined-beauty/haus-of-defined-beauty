@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Dashboard.css';
 
@@ -20,8 +19,7 @@ const STATUS_COLORS = {
 const fmtDate = d => new Date(d).toLocaleDateString('en-ZA');
 const fmtAmount = n => (n ? `R${Number(n).toLocaleString()}` : '—');
 
-function Dashboard() {
-  const navigate = useNavigate();
+function Dashboard({ onGoToCalendar }) {
   const [period, setPeriod] = useState('today');
   const [customDate, setCustomDate] = useState('');
   const [schedule, setSchedule] = useState([]);
@@ -179,7 +177,7 @@ function Dashboard() {
         </div>
       </div>
 
-      <button className="dash-calendar-link" onClick={() => navigate('/admin/calendar')}>
+      <button className="dash-calendar-link" onClick={onGoToCalendar}>
         View full calendar →
       </button>
     </div>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Dashboard from './Dashboard';
 import BookingList from './BookingList';
+import AdminCalendar from './AdminCalendar';
 import Reports from './Reports';
 import ProfilePanel from './ProfilePanel';
 import logo from '../assets/logo.jpeg';
@@ -22,8 +23,9 @@ function AdminDashboard() {
 
   const renderTab = () => {
     switch (activeTab) {
-      case 'Dashboard': return <Dashboard />;
+      case 'Dashboard': return <Dashboard onGoToCalendar={() => setActiveTab('Calendar')} />;
       case 'Bookings': return <BookingList isAdmin />;
+      case 'Calendar': return <AdminCalendar />;
       case 'Reports': return <Reports />;
       case 'Profile': return <ProfilePanel isAdmin />;
       default: return null;
@@ -44,7 +46,7 @@ function AdminDashboard() {
           <button
             key={tab}
             className={`nav-tab ${activeTab === tab ? 'active' : ''}`}
-            onClick={() => tab === 'Calendar' ? navigate('/admin/calendar') : setActiveTab(tab)}
+            onClick={() => setActiveTab(tab)}
           >
             {tab}
           </button>
