@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { nameProblem, normalizeName } from '../utils/nameCheck';
 import './ProfilePanel.css';
 
 function ProfilePanel({ isAdmin }) {
@@ -20,12 +21,18 @@ function ProfilePanel({ isAdmin }) {
   }, [endpoint]);
 
   const handleSave = () => {
-    axios.put(endpoint, form)
+    const problem = nameProblem(form.name);
+    if (problem) {
+      setError(problem);
+      return;
+    }
+    setError('');
+    axios.put(endpoint, { ...form, name: normalizeName(form.name) })
       .then(res => {
         setProfile(res.data);
         setEditing(false);
       })
-      .catch(() => setError('Failed to save profile.'));
+      .catch(err => setError(err.response?.data?.message || 'Failed to save profile.'));
   };
 
   if (!profile) return <p className="loading">Loading profile…</p>;
@@ -46,7 +53,7 @@ function ProfilePanel({ isAdmin }) {
           )}
           <div className="profile-actions">
             <button className="btn-primary" onClick={handleSave}>Save</button>
-            <button className="btn-secondary" onClick={() => setEditing(false)}>Cancel</button>
+            <button className="btn-secondary" onClick={() => { setEditing(false); setError(''); setForm({ name: profile.name || '', phone: profile.phone || '' }); }}>Cancel</button>
           </div>
         </div>
       ) : (

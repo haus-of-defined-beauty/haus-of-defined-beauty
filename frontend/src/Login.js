@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import logo from './assets/logo.jpeg';
+import { emailProblem, suggestEmail, normalizeEmail } from './utils/emailCheck';
+import { nameProblem, normalizeName } from './utils/nameCheck';
 import './Login.css';
 
 function Login() {
@@ -11,20 +13,84 @@ function Login() {
   const [options, setOptions] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailMsg, setEmailMsg] = useState('');   // prompt shown under the email box
+  const [emailHint, setEmailHint] = useState('');  // a likely typo fix, e.g. name@gmail.com
+  const [keptEmail, setKeptEmail] = useState('');  // typo-looking address the user chose to keep
+  const [nameMsg, setNameMsg] = useState('');     // prompt shown under the name box
+
+  const onNameChange = e => {
+    setForm({ ...form, name: e.target.value });
+    setNameMsg('');
+  };
+
+  // On leaving the box: only nag once something has been typed.
+  const onNameBlur = () => {
+    if (form.name.trim()) setNameMsg(nameProblem(form.name));
+  };
+
+  const onEmailChange = e => {
+    setForm({ ...form, email: e.target.value });
+    setEmailMsg('');
+    setEmailHint('');
+  };
+
+  // On leaving the box: only nag about a clearly invalid address, never an empty one.
+  const onEmailBlur = () => {
+    if (form.email.trim()) setEmailMsg(emailProblem(form.email));
+  };
+
+  const useSuggestion = () => {
+    setForm({ ...form, email: emailHint });
+    setEmailMsg('');
+    setEmailHint('');
+  };
+
+  // Returns true when the address is fine to send. A likely typo is flagged once;
+  // pressing the button again with the same address confirms it is intended.
+  const emailIsOk = () => {
+    const problem = emailProblem(form.email);
+    if (problem) { setEmailMsg(problem); setEmailHint(''); return false; }
+
+    const suggestion = suggestEmail(form.email);
+    if (suggestion && keptEmail !== normalizeEmail(form.email)) {
+      setEmailHint(suggestion);
+      setEmailMsg('typo');
+      setKeptEmail(normalizeEmail(form.email));
+      return false;
+    }
+    return true;
+  };
 
   const handleStart = async e => {
     e.preventDefault();
     setError('');
+    // Check both boxes so every problem is shown at once.
+    const emailOk = emailIsOk();
+    const nameIssue = nameProblem(form.name);
+    setNameMsg(nameIssue);
+    if (!emailOk || nameIssue) return;
+
+    const email = normalizeEmail(form.email);
+    const name = normalizeName(form.name);
     setLoading(true);
     try {
       const { data } = await axios.post('/api/auth/login/start', {
-        email: form.email,
-        name: form.name,
+        email,
+        name,
       });
+      setForm(f => ({ ...f, email, name }));
       setOptions(data.options);
       setStep('numbers');
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not send code.');
+      const { code, message } = err.response?.data || {};
+      if (code === 'INVALID_EMAIL') {
+        setEmailMsg(message);
+        setEmailHint('');
+      } else if (code === 'INVALID_NAME') {
+        setNameMsg(message);
+      } else {
+        setError(message || 'Could not send code.');
+      }
     } finally {
       setLoading(false);
     }
@@ -37,7 +103,7 @@ function Login() {
       const { data } = await axios.post('/api/auth/login/verify', {
         email: form.email,
         selected,
-        name: form.name,
+        name: normalizeName(form.name),
       });
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
@@ -56,7 +122,7 @@ function Login() {
     try {
       const { data } = await axios.post('/api/auth/login/start', {
         email: form.email,
-        name: form.name,
+        name: normalizeName(form.name),
       });
       setOptions(data.options);
     } catch (err) {
@@ -105,20 +171,44 @@ function Login() {
           </p>
 
           {step === 'email' && (
-            <form className="otp-form" onSubmit={handleStart}>
+            <form className="otp-form" onSubmit={handleStart} noValidate>
               <input
                 type="email"
                 placeholder="Email address"
                 value={form.email}
-                onChange={e => setForm({ ...form, email: e.target.value })}
-                required
+                onChange={onEmailChange}
+                onBlur={onEmailBlur}
+                className={emailMsg ? 'input-invalid' : undefined}
+                aria-invalid={emailMsg ? 'true' : undefined}
+                aria-describedby={emailMsg ? 'login-email-msg' : undefined}
+                autoComplete="email"
+                autoCapitalize="none"
+                spellCheck={false}
               />
+              {emailMsg && (
+                <p id="login-email-msg" className="login-error" role="alert">
+                  {emailHint ? (
+                    <>
+                      Did you mean{' '}
+                      <button type="button" className="login-suggest" onClick={useSuggestion}>{emailHint}</button>?
+                      {' '}If your address is correct, press Send Code again.
+                    </>
+                  ) : emailMsg}
+                </p>
+              )}
               <input
                 type="text"
                 placeholder="Your name"
                 value={form.name}
-                onChange={e => setForm({ ...form, name: e.target.value })}
+                onChange={onNameChange}
+                onBlur={onNameBlur}
+                className={nameMsg ? 'input-invalid' : undefined}
+                aria-invalid={nameMsg ? 'true' : undefined}
+                aria-describedby={nameMsg ? 'login-name-msg' : undefined}
+                autoComplete="name"
+                maxLength={80}
               />
+              {nameMsg && <p id="login-name-msg" className="login-error" role="alert">{nameMsg}</p>}
               {error && <p className="login-error">{error}</p>}
               <button type="submit" className="google-btn" disabled={loading}>
                 {loading ? 'Sending…' : 'Send Code'}

@@ -4,6 +4,8 @@ const Admin = require('../models/Admin');
 const Customer = require('../models/Customer');
 const LoginChallenge = require('../models/LoginChallenge');
 const sendMail = require('../utils/mailer');
+const { checkEmail } = require('../utils/validateEmail');
+const { checkName, isPlaceholderName } = require('../utils/validateName');
 
 const CODE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const RESEND_COOLDOWN_MS = 60 * 1000; // 1 minute
@@ -19,8 +21,15 @@ const randomTwoDigit = () => String(crypto.randomInt(10, 100));
 // Emails the correct number, and returns a shuffled set of options
 // (including the correct one) for the sign-in screen to display as buttons.
 const start = async (req, res) => {
-  const { email } = req.body;
-  if (!email) return res.status(400).json({ message: 'email required' });
+  // Trimmed + lowercased, and the domain must be able to receive mail — so a
+  // typo can't send a sign-in code into the void or create a duplicate account.
+  const check = await checkEmail(req.body.email);
+  if (!check.ok) return res.status(400).json({ message: check.message, code: 'INVALID_EMAIL' });
+  const email = check.email;
+
+  // A name is required so no account is ever created as a blank/placeholder.
+  const nameCheck = checkName(req.body.name);
+  if (!nameCheck.ok) return res.status(400).json({ message: nameCheck.message, code: 'INVALID_NAME' });
 
   try {
     const recent = await LoginChallenge.findOne({ email }).sort({ createdAt: -1 });
@@ -60,8 +69,13 @@ const start = async (req, res) => {
 // backend/scripts/seedAdmin.js) can ever result in an admin login. Anyone
 // else is treated as a customer, auto-created on first successful login.
 const verify = async (req, res) => {
-  const { email, selected, name } = req.body;
-  if (!email || !selected) return res.status(400).json({ message: 'email and selected required' });
+  const { selected } = req.body;
+  const check = await checkEmail(req.body.email, { checkDomain: false });
+  if (!check.ok) return res.status(400).json({ message: check.message, code: 'INVALID_EMAIL' });
+  const nameCheck = checkName(req.body.name);
+  if (!nameCheck.ok) return res.status(400).json({ message: nameCheck.message, code: 'INVALID_NAME' });
+  if (!selected) return res.status(400).json({ message: 'email and selected required' });
+  const email = check.email;
 
   try {
     const record = await LoginChallenge.findOne({ email }).sort({ createdAt: -1 });
@@ -82,16 +96,20 @@ const verify = async (req, res) => {
     let user = await Admin.findOne({ email });
     let role = 'admin';
     let isNewAccount = false;
-    if (user) {
-      if (name) { user.name = name; await user.save(); }
-    } else {
+    if (!user) {
       role = 'customer';
       isNewAccount = !(await Customer.exists({ email }));
       user = await Customer.findOneAndUpdate(
         { email },
-        { $setOnInsert: { email, name: name || 'Customer User' } },
+        { $setOnInsert: { email, name: nameCheck.name } },
         { upsert: true, new: true }
       );
+    }
+    // An account keeps the name it already has (change it from My Profile); the
+    // typed name only replaces an auto-filled placeholder such as "Admin".
+    if (isPlaceholderName(user.name)) {
+      user.name = nameCheck.name;
+      await user.save();
     }
 
     const token = signToken(user._id, role);
