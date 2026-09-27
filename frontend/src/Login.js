@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import logo from './assets/logo.jpeg';
 import SiteNav from './Site/SiteNav';
@@ -9,6 +9,16 @@ import './Login.css';
 
 function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // True "back to where I came from" (e.g. Home → Book Now → here → back
+  // lands on Home again), not a hardcoded page. `location.key === 'default'`
+  // means this tab has no in-app history to go back to (a fresh visit/direct
+  // link/refresh), so fall back to Home instead of leaving/going nowhere.
+  const goBack = () => {
+    if (location.key !== 'default') navigate(-1);
+    else navigate('/');
+  };
   const [step, setStep] = useState('email'); // 'email' | 'numbers'
   const [form, setForm] = useState({ email: '', name: '' });
   const [options, setOptions] = useState([]);
@@ -170,6 +180,9 @@ function Login() {
 
       <div className="login-form-side">
         <div className="login-card">
+          <button type="button" className="login-back" onClick={goBack}>
+            <span aria-hidden="true">←</span> Back
+          </button>
           <h2>Welcome</h2>
           <p className="login-subtitle">
             {step === 'email'

@@ -18,6 +18,12 @@
   position: relative;
   background: #080808;
 }
+/* Site.css only strips the browser's default underlined link styling for
+   anchors inside a ".site" wrapper (see .site a), which every other page
+   has and this one doesn't — without this, the logo/nav links show up
+   underlined. (Not resetting `color` here: .site-nav-links a already sets
+   white, and a higher-specificity color reset here would fight it.) */
+.login-topnav .site-nav a { text-decoration: none; }
 
 .login-container {
   flex: 1;
@@ -235,6 +241,24 @@
   width: 100%;
   max-width: 400px;
 }
+
+.login-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-bottom: 1.5rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #888;
+  cursor: pointer;
+}
+.login-back:hover { color: #1c1c1c; }
+.login-back span { font-size: 1rem; line-height: 1; }
 
 .login-card h2 {
   font-size: 2rem;
