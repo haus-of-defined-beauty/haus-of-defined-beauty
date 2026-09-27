@@ -1,8 +1,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Inter:wght@300;400;600&display=swap');
 
 /* ── Layout ── */
-.login-container {
+.login-page {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* SiteNav is normally a transparent bar overlaid on a page's hero image
+   (see Site.css .site-nav). This page has no single full-bleed hero behind
+   it, so here it renders as a normal, solid dark bar instead — same logo
+   and links as every other page, just not floating on top of the content. */
+.login-topnav .site-nav {
+  /* relative (not static): stays in normal flow like a regular header, but
+     still anchors the mobile dropdown's absolute positioning (Site.css
+     .site-nav-links, which expects a positioned ancestor). */
+  position: relative;
+  background: #080808;
+}
+
+.login-container {
+  flex: 1;
   display: grid;
   grid-template-columns: 1fr 1fr;
   font-family: 'Inter', sans-serif;

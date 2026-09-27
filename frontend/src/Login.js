@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import logo from './assets/logo.jpeg';
+import SiteNav from './Site/SiteNav';
 import { emailProblem, suggestEmail, normalizeEmail } from './utils/emailCheck';
 import { nameProblem, normalizeName } from './utils/nameCheck';
 import './Login.css';
@@ -133,7 +134,13 @@ function Login() {
   };
 
   return (
-    <div className="login-container">
+    <div className="login-page">
+      {/* Same header as every other public page — gives this page the site's
+          look and, via the logo/links, a way back that isn't just the
+          browser's back button. */}
+      <div className="login-topnav"><SiteNav /></div>
+
+      <div className="login-container">
 
       <div className="login-brand">
         <div className="logo-scene">
@@ -247,6 +254,7 @@ function Login() {
         </div>
       </div>
 
+      </div>
     </div>
   );
 }
