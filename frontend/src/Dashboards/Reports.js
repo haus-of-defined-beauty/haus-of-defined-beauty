@@ -36,9 +36,7 @@ const tooltipStyle = { fontSize: 13, fontFamily: 'Inter, sans-serif', borderRadi
 const fmtDate = d => new Date(d).toLocaleDateString('en-ZA');
 
 // Period text is driven entirely by what the backend actually queried —
-// only reports with a real bounded window (currently Monthly Booking
-// Status) get a date range; others are honestly labelled "All time"
-// rather than showing a fabricated range.
+// every report is scoped to last calendar month, matching the spec.
 const periodRangeText = period => (period?.startFormatted ? `${period.startFormatted} – ${period.endFormatted}` : null);
 const periodTitle = (reportLabel, period) => `${reportLabel} Report — ${period?.label || ''}`;
 const periodHeading = (reportLabel, period) => {
