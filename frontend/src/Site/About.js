@@ -8,15 +8,22 @@ import polaroid3 from '../assets/about/polaroid-3.jpg';
 import salon from '../assets/about/salon.jpg';
 import './About.css';
 
-const LOREM = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
-
 const ADDRESS_QUERY = '764 4th Avenue, Melville, Johannesburg, 2092';
 const MAP_EMBED = `https://www.google.com/maps?q=${encodeURIComponent(ADDRESS_QUERY)}&output=embed`;
 const MAP_LINK = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ADDRESS_QUERY)}`;
 
+// Illustrative examples — swap for your real team's names, roles and photos.
 const TEAM = [
-  { name: 'Team Member Name', role: 'Role', text: LOREM },
-  { name: 'Team Member Name', role: 'Role', text: LOREM },
+  {
+    name: 'Boitumelo Khumalo',
+    role: 'Founder & Lead Nail Technician',
+    text: 'Boitumelo founded Haus of Defined Beauty to bring salon-quality nail artistry to Melville. She oversees every gel, acrylic and polygel set that leaves the chair, and still does the finer nail-art work herself.',
+  },
+  {
+    name: 'Kagiso Mahlangu',
+    role: 'Hair & Makeup Artist',
+    text: 'Kagiso leads our hair and makeup services, from everyday installs to full glam for events. Trained across both disciplines, she makes sure your hair and makeup are always styled to match.',
+  },
 ];
 
 function About() {
@@ -34,7 +41,7 @@ function About() {
             </div>
             <div className="about-hero-copy">
               <h1>Haus of Defined<br />Beauty at a Glance</h1>
-              <p>{LOREM}</p>
+              <p>Haus of Defined Beauty is a nail, hair, makeup and lash studio based in Melville, Johannesburg. What started as a one-chair passion project has grown into a full beauty bar — the goal has always stayed the same: precise, personalised work that makes you feel as good as you look.</p>
               <a href="#contact" className="site-btn site-btn--light">Contact Us</a>
             </div>
           </section>

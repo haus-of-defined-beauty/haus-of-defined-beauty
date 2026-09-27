@@ -14,19 +14,18 @@ import serviceMakeup from '../assets/home/service-makeup.jpg';
 import serviceEyelashes from '../assets/home/service-eyelashes.jpg';
 import './Home.css';
 
-const LOREM = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
-
 const SERVICES = [
-  { key: 'nails', title: 'Nails', text: LOREM, img: serviceNails, alt: 'Almond nails with leopard-print tips', pos: '50% 50%' },
-  { key: 'hair', title: 'Hair', text: LOREM, img: serviceHair, alt: 'Client with a sleek, straight install', pos: '50% 45%' },
-  { key: 'makeup', title: 'MakeUp', text: LOREM, img: serviceMakeup, alt: 'Client with a soft pink makeup look', pos: '50% 40%' },
-  { key: 'eyelashes', title: 'Eyelashes', text: LOREM, img: serviceEyelashes, alt: 'Eyelash extensions, before and after', pos: '50% 50%' },
+  { key: 'nails', title: 'Nails', text: 'Precision gel, acrylic and polygel sets — built to last and finished with the small details that make your hands feel done. Ask us about nail art on the day.', img: serviceNails, alt: 'Almond nails with leopard-print tips', pos: '50% 50%' },
+  { key: 'hair', title: 'Hair', text: 'From a clean basic install to a fully styled frontal pony, every hair service is fitted to you. Bring your own hair, or let us supply it.', img: serviceHair, alt: 'Client with a sleek, straight install', pos: '50% 45%' },
+  { key: 'makeup', title: 'MakeUp', text: 'Soft, everyday glam to full red-carpet looks — every face is different, so every application is built around your skin and the occasion.', img: serviceMakeup, alt: 'Client with a soft pink makeup look', pos: '50% 40%' },
+  { key: 'eyelashes', title: 'Eyelashes', text: 'Classic to volume lash extensions, plus brow shaping and tinting, for a finished look that lasts weeks, not hours.', img: serviceEyelashes, alt: 'Eyelash extensions, before and after', pos: '50% 50%' },
 ];
 
+// Illustrative examples — swap for real client quotes before this goes live.
 const TESTIMONIALS = [
-  { name: 'Client Name', text: LOREM },
-  { name: 'Client Name', text: LOREM },
-  { name: 'Client Name', text: LOREM },
+  { name: 'Thandeka R.', text: "My nails have never lasted this long without lifting. I get compliments every single time I leave." },
+  { name: 'Palesa K.', text: 'The install was flawless and the styling held for weeks. I always leave feeling like a completely different person.' },
+  { name: 'Nomvula T.', text: 'Booked in for full glam before an event and they nailed the brief exactly — professional, on time, and so talented.' },
 ];
 
 function Home() {
@@ -65,7 +64,7 @@ function Home() {
 
         <section className="home-services">
           <h2>Our Services</h2>
-          <p className="home-services-sub">{LOREM}</p>
+          <p className="home-services-sub">From nails to lashes, every service at Haus of Defined Beauty is booked, timed and finished with one thing in mind — you, looking and feeling completely put together.</p>
           {SERVICES.map((s, i) => (
             <article key={s.key} className={`svc-card ${i % 2 ? 'flip' : ''}`}>
               <div className="svc-media">
@@ -85,7 +84,7 @@ function Home() {
 
         <section className="home-masterclass">
           <h2>Masterclass</h2>
-          <p>{LOREM}</p>
+          <p>Ready to turn your passion into a skill you can charge for? Our masterclasses walk you through the exact techniques we use in the salon, in small, hands-on groups led by our own technicians.</p>
           <Link to="/masterclasses" className="site-btn site-btn--light">Apply Now</Link>
         </section>
 
