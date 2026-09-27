@@ -3,6 +3,7 @@ const Booking = require('../models/Booking');
 const Customer = require('../models/Customer');
 const Admin = require('../models/Admin');
 const notify = require('../utils/notify');
+const { WEBSITE_URL, WHATSAPP_LABEL } = require('../utils/emailTemplates');
 const {
   generateSignature,
   verifyItnSignature,
@@ -96,17 +97,33 @@ const payfastNotify = async (req, res) => {
         .join('; ');
       const admins = await Admin.find().select('email');
 
+      const firstName = (customer?.name || '').trim().split(' ')[0] || 'there';
+      // One Service/Date/Time block per booking in the group — usually just
+      // one, but a customer can pay for several services in a single group.
+      const detailsBlock = bookings
+        .map(b => `Service: ${b.serviceId?.name || 'Service'}\nDate: ${new Date(b.date).toLocaleDateString('en-ZA')}\nTime: ${b.time}`)
+        .join('\n\n');
+      const customerMessage = `Hi ${firstName},
+
+Your payment and booking has been confirmed with the following details:
+
+${detailsBlock}
+
+We look forward to seeing you! For any questions you can contact us as follows:
+
+Website: ${WEBSITE_URL}
+Whatsapp: ${WHATSAPP_LABEL}`;
+
       // Awaited: a serverless function is frozen once it responds, so emails still
       // in flight at that point would never be sent. notify() never throws.
       await Promise.all([
         ...admins.map(a => notify(
           a.email,
-          `Payment received for ${customer?.name || 'a customer'}, booking confirmed for ${dateTimeList}.`
+          `Payment received for ${customer?.name || 'a customer'}, booking confirmed for ${dateTimeList}.`,
+          'Booking Confirmed',
+          'booking'
         )),
-        notify(
-          customer?.email,
-          `Your payment was received, booking confirmed for ${dateTimeList}. See you soon!`
-        ),
+        notify(customer?.email, customerMessage, 'Booking Confirmed', 'booking'),
       ]);
     } else if (payment_status === 'FAILED' || payment_status === 'CANCELLED') {
       payment.status = 'failed';

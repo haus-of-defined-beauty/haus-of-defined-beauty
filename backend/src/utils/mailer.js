@@ -8,12 +8,16 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-async function sendMail(to, subject, text) {
+// `html` is optional — plain-text-only callers (or tests) still work exactly
+// as before. When present, it's sent alongside `text` so clients that can't
+// render HTML still get a readable email.
+async function sendMail(to, subject, text, html) {
   await transporter.sendMail({
     from: `"Haus of Defined Beauty" <${process.env.GMAIL_USER}>`,
     to,
     subject,
     text,
+    ...(html ? { html } : {}),
   });
 }
 

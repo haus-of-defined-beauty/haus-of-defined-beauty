@@ -49,11 +49,15 @@ const sendReminders = async (req, res) => {
       await Promise.all([
         notify(
           booking.customerId?.email,
-          `Reminder: your ${serviceName} appointment is coming up at ${booking.time} today (${dateLabel}). See you soon!`
+          `Reminder: your ${serviceName} appointment is coming up at ${booking.time} today (${dateLabel}). See you soon!`,
+          'Appointment Reminder',
+          'reminder'
         ),
         ...admins.map(a => notify(
           a.email,
-          `Reminder: ${customerName} has a ${serviceName} appointment at ${booking.time} today (${dateLabel}).`
+          `Reminder: ${customerName} has a ${serviceName} appointment at ${booking.time} today (${dateLabel}).`,
+          'Appointment Reminder',
+          'reminder'
         )),
       ]);
 

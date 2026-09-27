@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const Admin = require('../models/Admin');
 const Customer = require('../models/Customer');
 const LoginChallenge = require('../models/LoginChallenge');
-const sendMail = require('../utils/mailer');
+const notify = require('../utils/notify');
 const { checkEmail } = require('../utils/validateEmail');
 const { checkName, isPlaceholderName } = require('../utils/validateName');
 
@@ -49,11 +49,16 @@ const start = async (req, res) => {
       expiresAt: new Date(Date.now() + CODE_TTL_MS),
     });
 
-    await sendMail(
+    const sent = await notify(
       email,
+      `Your sign-in number is ${correctNumber}. On the sign-in screen, click the button showing this number. It expires in 5 minutes.`,
       'Your Haus of Defined Beauty sign-in code',
-      `Your sign-in number is ${correctNumber}. On the sign-in screen, click the button showing this number. It expires in 5 minutes.`
+      'otp'
     );
+    // Unlike other notify() calls, the email *is* the deliverable here — if
+    // it didn't send, the options below are useless, so say so instead of
+    // leaving the customer staring at buttons for a code that never arrives.
+    if (!sent) return res.status(502).json({ message: 'Could not send the sign-in code email. Please try again.' });
 
     const shuffled = [...options].sort(() => Math.random() - 0.5);
     res.json({ options: shuffled });

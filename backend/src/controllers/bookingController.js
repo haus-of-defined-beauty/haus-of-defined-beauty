@@ -170,9 +170,11 @@ const rescheduleBooking = async (req, res) => {
     await Promise.all([
       ...admins.map(a => notify(
         a.email,
-        `${customer?.name || 'A customer'} rescheduled ${serviceName} to ${dateLabel} at ${time}.`
+        `${customer?.name || 'A customer'} rescheduled ${serviceName} to ${dateLabel} at ${time}.`,
+        'Booking Rescheduled',
+        'booking'
       )),
-      notify(customer?.email, `Your ${serviceName} booking was rescheduled to ${dateLabel} at ${time}.`),
+      notify(customer?.email, `Your ${serviceName} booking was rescheduled to ${dateLabel} at ${time}.`, 'Booking Rescheduled', 'booking'),
     ]);
 
     res.json(await booking.populate('serviceId'));
