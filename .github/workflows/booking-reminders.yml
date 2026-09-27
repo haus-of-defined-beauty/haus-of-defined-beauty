@@ -1,0 +1,20 @@
+name: Booking reminders
+
+# Vercel's free (Hobby) plan only allows a cron job to run once a day, which
+# is no use for "an hour before the appointment" reminders. GitHub Actions'
+# own scheduler has no such limit and is free, so it plays that role instead:
+# it just pings the backend every 10 minutes, and the backend decides which
+# bookings (if any) are actually due a reminder.
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger due booking reminders
+        run: |
+          curl --fail-with-body -sS -X POST "https://haus-of-defined-beauty-api.vercel.app/api/reminders/send" \
+            -H "x-cron-secret: ${{ secrets.REMINDER_CRON_SECRET }}"

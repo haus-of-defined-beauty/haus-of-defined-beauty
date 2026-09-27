@@ -17,6 +17,7 @@ const paymentRoutes = require('./src/routes/paymentRoutes');
 const reportRoutes = require('./src/routes/reportRoutes');
 const dashboardRoutes = require('./src/routes/dashboardRoutes');
 const masterclassRoutes = require('./src/routes/masterclassRoutes');
+const reminderRoutes = require('./src/routes/reminderRoutes');
 
 const app = express();
 
@@ -43,6 +44,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/masterclass', masterclassRoutes);
+app.use('/api/reminders', reminderRoutes);
 
 app.get('/', (req, res) => res.json({ message: 'Haus of Defined Beauty API' }));
 

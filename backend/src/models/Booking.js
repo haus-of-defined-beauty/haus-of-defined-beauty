@@ -13,6 +13,7 @@ const bookingSchema = new mongoose.Schema({
   },
   notes: { type: String },
   wasRescheduled: { type: Boolean, default: false },
+  reminderSent: { type: Boolean, default: false },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Booking', bookingSchema);
