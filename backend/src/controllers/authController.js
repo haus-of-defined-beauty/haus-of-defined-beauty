@@ -1,57 +1,57 @@
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
 const Admin = require('../models/Admin');
 const Customer = require('../models/Customer');
 const LoginChallenge = require('../models/LoginChallenge');
+const SignupChallenge = require('../models/SignupChallenge');
 const notify = require('../utils/notify');
+const { issueChallenge, consumeChallenge, shuffle } = require('../utils/challenge');
 const { checkEmail } = require('../utils/validateEmail');
 const { checkName, isPlaceholderName } = require('../utils/validateName');
-
-const CODE_TTL_MS = 5 * 60 * 1000; // 5 minutes
-const RESEND_COOLDOWN_MS = 60 * 1000; // 1 minute
-const MAX_ATTEMPTS = 3;
-const NUM_OPTIONS = 3;
+const { checkPhone } = require('../utils/validatePhone');
 
 const signToken = (id, role) =>
   jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-const randomTwoDigit = () => String(crypto.randomInt(10, 100));
+// Signing in never creates anything — you can only sign in to a profile that
+// already exists (an Admin seeded by scripts/seedAdmin.js, or a Customer who
+// signed up). Returns the profile, or null if there is none for this email.
+const findProfile = async email => {
+  const admin = await Admin.findOne({ email });
+  if (admin) return { user: admin, role: 'admin' };
+  const customer = await Customer.findOne({ email });
+  if (customer) return { user: customer, role: 'customer' };
+  return null;
+};
+
+const NO_PROFILE = {
+  code: 'NO_PROFILE',
+  message: "We couldn't find a profile for that email address. Create one to get started.",
+};
 
 // POST /api/auth/login/start — Body: { email, name }
 // Emails the correct number, and returns a shuffled set of options
 // (including the correct one) for the sign-in screen to display as buttons.
 const start = async (req, res) => {
   // Trimmed + lowercased, and the domain must be able to receive mail — so a
-  // typo can't send a sign-in code into the void or create a duplicate account.
+  // typo can't send a sign-in code into the void.
   const check = await checkEmail(req.body.email);
   if (!check.ok) return res.status(400).json({ message: check.message, code: 'INVALID_EMAIL' });
   const email = check.email;
 
-  // A name is required so no account is ever created as a blank/placeholder.
   const nameCheck = checkName(req.body.name);
   if (!nameCheck.ok) return res.status(400).json({ message: nameCheck.message, code: 'INVALID_NAME' });
 
   try {
-    const recent = await LoginChallenge.findOne({ email }).sort({ createdAt: -1 });
-    if (recent && Date.now() - recent.createdAt.getTime() < RESEND_COOLDOWN_MS) {
-      return res.status(429).json({ message: 'Please wait a minute before requesting another code' });
-    }
+    // Checked before a code is sent, so someone without a profile is told to
+    // sign up instead of waiting on an email that leads nowhere.
+    if (!(await findProfile(email))) return res.status(404).json(NO_PROFILE);
 
-    const numbers = new Set();
-    while (numbers.size < NUM_OPTIONS) numbers.add(randomTwoDigit());
-    const options = [...numbers];
-    const correctNumber = options[crypto.randomInt(0, options.length)];
-
-    await LoginChallenge.deleteMany({ email });
-    await LoginChallenge.create({
-      email,
-      correctNumber,
-      expiresAt: new Date(Date.now() + CODE_TTL_MS),
-    });
+    const challenge = await issueChallenge(LoginChallenge, email);
+    if (!challenge.ok) return res.status(challenge.status).json({ message: challenge.message });
 
     const sent = await notify(
       email,
-      `Your sign-in number is ${correctNumber}. On the sign-in screen, click the button showing this number. It expires in 5 minutes.`,
+      `Your sign-in number is ${challenge.correctNumber}. On the sign-in screen, click the button showing this number. It expires in 5 minutes.`,
       'Your Haus of Defined Beauty sign-in code',
       'otp'
     );
@@ -60,19 +60,15 @@ const start = async (req, res) => {
     // leaving the customer staring at buttons for a code that never arrives.
     if (!sent) return res.status(502).json({ message: 'Could not send the sign-in code email. Please try again.' });
 
-    const shuffled = [...options].sort(() => Math.random() - 0.5);
-    res.json({ options: shuffled });
+    res.json({ options: shuffle(challenge.options) });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
 // POST /api/auth/login/verify — Body: { email, selected, name }
-// Role is never taken from the client — it's derived from whether an Admin
-// account already exists for this email. Admin accounts are never
-// self-service created here; only a pre-provisioned Admin document (see
-// backend/scripts/seedAdmin.js) can ever result in an admin login. Anyone
-// else is treated as a customer, auto-created on first successful login.
+// Role is never taken from the client — it's whatever the existing profile
+// is. Admin accounts are only ever created by scripts/seedAdmin.js.
 const verify = async (req, res) => {
   const { selected } = req.body;
   const check = await checkEmail(req.body.email, { checkDomain: false });
@@ -83,33 +79,15 @@ const verify = async (req, res) => {
   const email = check.email;
 
   try {
-    const record = await LoginChallenge.findOne({ email }).sort({ createdAt: -1 });
-    if (!record || record.expiresAt < new Date()) {
-      return res.status(400).json({ message: 'Code expired or not found — request a new one' });
-    }
-    if (record.attempts >= MAX_ATTEMPTS) {
-      return res.status(429).json({ message: 'Too many attempts — request a new code' });
-    }
-    if (record.correctNumber !== String(selected)) {
-      record.attempts += 1;
-      await record.save();
-      return res.status(400).json({ message: "That's not the right number — try again" });
-    }
+    // Re-checked here, not just in start(), so hitting this route directly
+    // can't conjure an account either.
+    const profile = await findProfile(email);
+    if (!profile) return res.status(404).json(NO_PROFILE);
 
-    await LoginChallenge.deleteOne({ _id: record._id }); // one-time use
+    const result = await consumeChallenge(LoginChallenge, email, selected);
+    if (!result.ok) return res.status(result.status).json({ message: result.message });
 
-    let user = await Admin.findOne({ email });
-    let role = 'admin';
-    let isNewAccount = false;
-    if (!user) {
-      role = 'customer';
-      isNewAccount = !(await Customer.exists({ email }));
-      user = await Customer.findOneAndUpdate(
-        { email },
-        { $setOnInsert: { email, name: nameCheck.name } },
-        { upsert: true, new: true }
-      );
-    }
+    const { user, role } = profile;
     // An account keeps the name it already has (change it from My Profile); the
     // typed name only replaces an auto-filled placeholder such as "Admin".
     if (isPlaceholderName(user.name)) {
@@ -118,7 +96,80 @@ const verify = async (req, res) => {
     }
 
     const token = signToken(user._id, role);
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email, role }, isNewAccount });
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email, role } });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// POST /api/auth/signup/start — Body: { email, name, phone }
+// Emails a number to prove the address is real. Nothing is written to the
+// customer list until that number comes back (see signupVerify).
+const signupStart = async (req, res) => {
+  const check = await checkEmail(req.body.email);
+  if (!check.ok) return res.status(400).json({ message: check.message, code: 'INVALID_EMAIL' });
+  const email = check.email;
+
+  const nameCheck = checkName(req.body.name);
+  if (!nameCheck.ok) return res.status(400).json({ message: nameCheck.message, code: 'INVALID_NAME' });
+
+  const phoneCheck = checkPhone(req.body.phone);
+  if (!phoneCheck.ok) return res.status(400).json({ message: phoneCheck.message, code: 'INVALID_PHONE' });
+
+  try {
+    if (await findProfile(email)) {
+      return res.status(409).json({
+        code: 'PROFILE_EXISTS',
+        message: 'There is already a profile for that email address — sign in instead.',
+      });
+    }
+
+    const challenge = await issueChallenge(SignupChallenge, email, {
+      name: nameCheck.name,
+      phone: phoneCheck.phone,
+    });
+    if (!challenge.ok) return res.status(challenge.status).json({ message: challenge.message });
+
+    const sent = await notify(
+      email,
+      `Your sign-up number is ${challenge.correctNumber}. On the sign-up screen, click the button showing this number to confirm this email address. It expires in 5 minutes.`,
+      'Confirm your Haus of Defined Beauty email',
+      'otp'
+    );
+    if (!sent) return res.status(502).json({ message: 'Could not send the confirmation email. Please try again.' });
+
+    res.json({ options: shuffle(challenge.options) });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// POST /api/auth/signup/verify — Body: { email, selected }
+// Creates the profile from the details held with the challenge — not from
+// this request — so only details that came with the proven email are used.
+// No token is returned: a new profile goes back to the sign-in screen.
+const signupVerify = async (req, res) => {
+  const { selected } = req.body;
+  const check = await checkEmail(req.body.email, { checkDomain: false });
+  if (!check.ok) return res.status(400).json({ message: check.message, code: 'INVALID_EMAIL' });
+  if (!selected) return res.status(400).json({ message: 'email and selected required' });
+  const email = check.email;
+
+  try {
+    if (await findProfile(email)) {
+      return res.status(409).json({
+        code: 'PROFILE_EXISTS',
+        message: 'There is already a profile for that email address — sign in instead.',
+      });
+    }
+
+    const result = await consumeChallenge(SignupChallenge, email, selected);
+    if (!result.ok) return res.status(result.status).json({ message: result.message });
+
+    const { name, phone } = result.record;
+    const customer = await Customer.create({ email, name, phone });
+
+    res.status(201).json({ created: true, user: { name: customer.name, email: customer.email } });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -129,4 +180,4 @@ const googleCallback = async (req, res) => {
   res.status(501).json({ message: 'Google OAuth not yet configured' });
 };
 
-module.exports = { start, verify, googleCallback };
+module.exports = { start, verify, signupStart, signupVerify, googleCallback };
