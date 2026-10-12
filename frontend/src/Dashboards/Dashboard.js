@@ -19,6 +19,21 @@ const STATUS_COLORS = {
 const fmtDate = d => new Date(d).toLocaleDateString('en-ZA');
 const fmtAmount = n => (n ? `R${Number(n).toLocaleString()}` : '—');
 
+// "Mon, 13 Oct" — short enough for a table column, and says the weekday,
+// which is what you actually want when scanning a week of bookings.
+// timeZone: 'UTC' because a booking's date is stored as a calendar day at
+// UTC midnight (the time of day is a separate field) — reading it in local
+// time would show the day before for anyone behind UTC.
+const fmtDayLabel = d => new Date(d).toLocaleDateString('en-ZA', {
+  weekday: 'short',
+  day: 'numeric',
+  month: 'short',
+  timeZone: 'UTC',
+});
+
+const isSameDay = (a, b) =>
+  new Date(a).toISOString().slice(0, 10) === new Date(b).toISOString().slice(0, 10);
+
 function Dashboard({ onGoToCalendar }) {
   const [period, setPeriod] = useState('today');
   const [customDate, setCustomDate] = useState('');
@@ -89,11 +104,15 @@ function Dashboard({ onGoToCalendar }) {
           <div className="dash-table-wrap">
             <table className="dash-table">
               <thead>
-                <tr><th>Time</th><th>Client</th><th>Service</th><th>Status</th><th>Amount</th></tr>
+                <tr><th>Date</th><th>Time</th><th>Client</th><th>Service</th><th>Status</th><th>Amount</th></tr>
               </thead>
               <tbody>
                 {schedule.map(b => (
                   <tr key={b.id}>
+                    <td>
+                      <span className="dash-day">{fmtDayLabel(b.date)}</span>
+                      {isSameDay(b.date, new Date()) ? <span className="dash-day-tag">Today</span> : null}
+                    </td>
                     <td>
                       <span className="dash-time">{b.time}</span>
                       {b.duration ? <span className="dash-duration">{b.duration} min</span> : null}

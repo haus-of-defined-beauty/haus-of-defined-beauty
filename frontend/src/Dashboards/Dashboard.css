@@ -102,6 +102,21 @@
 .dash-time { font-weight: 600; color: #1c1c1c; }
 .dash-duration { display: block; font-size: 0.72rem; color: #aaa; }
 
+.dash-day { font-weight: 600; color: #1c1c1c; white-space: nowrap; }
+/* Picks out today's rows when the list spans a whole week. */
+.dash-day-tag {
+  display: inline-block;
+  margin-top: 0.15rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 20px;
+  background: #1c1c1c;
+  color: #c4a882;
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
 .dash-status {
   display: inline-block;
   padding: 0.2rem 0.7rem;
