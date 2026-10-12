@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import BookingList from './BookingList';
 import ProfilePanel from './ProfilePanel';
@@ -11,8 +11,6 @@ const TABS = ['Book', 'My Bookings', 'Profile'];
 function CustomerDashboard() {
   const [activeTab, setActiveTab] = useState('My Bookings');
   const navigate = useNavigate();
-  const location = useLocation();
-  const [showWelcome, setShowWelcome] = useState(Boolean(location.state?.justSignedUp));
 
   const handleLogout = () => {
     localStorage.clear();
@@ -37,12 +35,6 @@ function CustomerDashboard() {
           <button className="logout-btn" onClick={handleLogout}>Log Out</button>
         </div>
       </header>
-      {showWelcome && (
-        <div className="welcome-banner">
-          <span>🎉 Welcome to Haus of Defined Beauty! Your account has been created.</span>
-          <button onClick={() => setShowWelcome(false)}>&times;</button>
-        </div>
-      )}
       <nav className="dashboard-nav">
         {TABS.map(tab => (
           <button

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import SiteNav from './Site/SiteNav';
 import SiteFooter from './Site/SiteFooter';
@@ -11,7 +11,7 @@ import polaroid5 from './assets/about/polaroid-2.jpg';
 import polaroid6 from './assets/home/service-nails.jpg';
 import { emailProblem, suggestEmail, normalizeEmail } from './utils/emailCheck';
 import { nameProblem, normalizeName } from './utils/nameCheck';
-import './Login.css';
+import './Auth.css';
 
 function Login() {
   const navigate = useNavigate();
@@ -29,6 +29,7 @@ function Login() {
   const [form, setForm] = useState({ email: '', name: '' });
   const [options, setOptions] = useState([]);
   const [error, setError] = useState('');
+  const [noProfile, setNoProfile] = useState(false); // show a way to sign up instead
   const [loading, setLoading] = useState(false);
   const [emailMsg, setEmailMsg] = useState('');   // prompt shown under the email box
   const [emailHint, setEmailHint] = useState('');  // a likely typo fix, e.g. name@gmail.com
@@ -49,6 +50,8 @@ function Login() {
     setForm({ ...form, email: e.target.value });
     setEmailMsg('');
     setEmailHint('');
+    setNoProfile(false);
+    setError('');
   };
 
   // On leaving the box: only nag about a clearly invalid address, never an empty one.
@@ -81,6 +84,7 @@ function Login() {
   const handleStart = async e => {
     e.preventDefault();
     setError('');
+    setNoProfile(false);
     // Check both boxes so every problem is shown at once.
     const emailOk = emailIsOk();
     const nameIssue = nameProblem(form.name);
@@ -105,6 +109,11 @@ function Login() {
         setEmailHint('');
       } else if (code === 'INVALID_NAME') {
         setNameMsg(message);
+      } else if (code === 'NO_PROFILE') {
+        // Nothing to sign in to yet — point them at sign-up rather than
+        // leaving a dead end.
+        setNoProfile(true);
+        setError(message || "We couldn't find a profile for that email address.");
       } else {
         setError(message || 'Could not send code.');
       }
@@ -125,7 +134,7 @@ function Login() {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-      navigate(data.user.role === 'admin' ? '/admin' : '/customer', { state: { justSignedUp: data.isNewAccount } });
+      navigate(data.user.role === 'admin' ? '/admin' : '/customer');
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid selection.');
     } finally {
@@ -157,9 +166,9 @@ function Login() {
       <SiteNav />
 
       <main>
-      <section className="login-hero site-marble">
-        <div className="login-hero-inner">
-          <button type="button" className="login-back" onClick={goBack}>
+      <section className="auth-hero site-marble">
+        <div className="auth-hero-inner">
+          <button type="button" className="auth-back" onClick={goBack}>
             <span aria-hidden="true">←</span> Back
           </button>
 
@@ -175,15 +184,23 @@ function Login() {
               <div className="polaroid lp6"><img src={polaroid6} alt="" /></div>
             </div>
 
-            <div className="login-center">
+            <div className="auth-center">
               <h2>Welcome</h2>
-              <p className="login-subtitle">
+              <p className="auth-subtitle">
                 {step === 'email'
                   ? 'Sign in with your email to continue'
                   : `We emailed a number to ${form.email} — click the matching one below`}
               </p>
 
-              <div className="login-card">
+              {/* Carried over from the sign-up screen, which sends people
+                  here once their email is confirmed. */}
+              {location.state?.profileCreated && step === 'email' && (
+                <p className="auth-flash" role="status">
+                  Your profile is ready{location.state.name ? `, ${location.state.name}` : ''} — sign in below to get started.
+                </p>
+              )}
+
+              <div className="auth-card">
                 {step === 'email' && (
                   <form className="otp-form" onSubmit={handleStart} noValidate>
                     <input
@@ -200,11 +217,11 @@ function Login() {
                       spellCheck={false}
                     />
                     {emailMsg && (
-                      <p id="login-email-msg" className="login-error" role="alert">
+                      <p id="login-email-msg" className="auth-error" role="alert">
                         {emailHint ? (
                           <>
                             Did you mean{' '}
-                            <button type="button" className="login-suggest" onClick={useSuggestion}>{emailHint}</button>?
+                            <button type="button" className="auth-suggest" onClick={useSuggestion}>{emailHint}</button>?
                             {' '}If your address is correct, press Send Code again.
                           </>
                         ) : emailMsg}
@@ -222,9 +239,21 @@ function Login() {
                       autoComplete="name"
                       maxLength={80}
                     />
-                    {nameMsg && <p id="login-name-msg" className="login-error" role="alert">{nameMsg}</p>}
-                    {error && <p className="login-error">{error}</p>}
-                    <button type="submit" className="google-btn" disabled={loading}>
+                    {nameMsg && <p id="login-name-msg" className="auth-error" role="alert">{nameMsg}</p>}
+                    {error && (
+                      <p className="auth-error" role="alert">
+                        {error}
+                        {noProfile && (
+                          <>
+                            {' '}
+                            <Link className="auth-error-link" to="/signup" state={{ email: normalizeEmail(form.email), name: form.name }}>
+                              Create one here
+                            </Link>.
+                          </>
+                        )}
+                      </p>
+                    )}
+                    <button type="submit" className="auth-submit" disabled={loading}>
                       {loading ? 'Sending…' : 'Send Code'}
                     </button>
                   </form>
@@ -245,7 +274,7 @@ function Login() {
                         </button>
                       ))}
                     </div>
-                    {error && <p className="login-error">{error}</p>}
+                    {error && <p className="auth-error" role="alert">{error}</p>}
                     <div className="otp-links">
                       <button type="button" className="otp-link" onClick={() => { setStep('email'); setOptions([]); setError(''); }}>
                         Change email
@@ -258,7 +287,14 @@ function Login() {
                 )}
               </div>
 
-              <p className="login-hint">No password needed — just your email.</p>
+              <p className="auth-hint">No password needed — just your email.</p>
+
+              {step === 'email' && (
+                <p className="auth-alt">
+                  Don't have a profile yet?{' '}
+                  <Link className="auth-alt-link" to="/signup">Create one here</Link>
+                </p>
+              )}
             </div>
           </div>
         </div>

@@ -1,23 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Inter:wght@300;400;600&display=swap');
 
 /* ════════════════════════════════════════
-   HERO — dark marble (.site-marble, shared with Home's intro section)
-   with the sign-in card centered and real salon polaroids scattered
-   around it, SiteNav overlaid transparently on top like every other page.
+   Shared by the sign-in (Login.js) and sign-up (Signup.js) screens: a dark
+   marble hero (.site-marble, shared with Home's intro section) with the
+   form card on it, SiteNav overlaid transparently like every other page.
+   Only the composition around the card differs per page, further down.
 ════════════════════════════════════════ */
-.login-hero {
+.auth-hero {
   position: relative;
   padding: clamp(7rem, 13vw, 9rem) clamp(1.25rem, 5vw, 3.5rem) 4.5rem;
   display: flex;
   justify-content: center;
 }
 
-.login-hero-inner {
+.auth-hero-inner {
   width: 100%;
   max-width: 1200px;
 }
 
-.login-back {
+.auth-back {
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -32,9 +33,92 @@
   color: #cfc8c0;
   cursor: pointer;
 }
-.login-back:hover { color: #fff; }
-.login-back span { font-size: 1rem; line-height: 1; }
+.auth-back:hover { color: #fff; }
+.auth-back span { font-size: 1rem; line-height: 1; }
 
+/* The heading + subtitle + card column, centred within whatever space the
+   page's own layout gives it. */
+.auth-center {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.auth-center h2 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: clamp(2.4rem, 4.6vw, 3.4rem);
+  color: #fff;
+  margin-bottom: 0.4rem;
+}
+
+.auth-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+  color: #d8d2cb;
+  margin-bottom: 2rem;
+  max-width: 34ch;
+}
+
+.auth-card {
+  width: 100%;
+  background: #ece6df;
+  border-radius: 10px;
+  padding: 2rem 2rem 1.75rem;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+}
+
+.auth-hint {
+  font-size: 0.75rem;
+  color: #bdb6ae;
+  margin-top: 1.25rem;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+/* "Don't have a profile yet? Create one here" / "Already have one? Sign in" */
+.auth-alt {
+  margin-top: 1rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  color: #e2dcd5;
+}
+
+/* Scoped under .site so it outranks Site.css's `.site a { text-decoration:
+   none }` — without the extra class these read as plain bold text, not links. */
+.site .auth-alt-link {
+  color: #fff;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.site .auth-alt-link:hover { color: #c4a882; }
+
+/* One-line confirmation carried over from another screen (e.g. a profile
+   that was just created), shown above the card. */
+.auth-flash {
+  width: 100%;
+  margin-bottom: 1.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(196, 168, 130, 0.55);
+  border-radius: 6px;
+  background: rgba(196, 168, 130, 0.14);
+  color: #f1ece6;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+/* ════════════════════════════════════════
+   SIGN IN — card centred, polaroids scattered around it
+════════════════════════════════════════ */
 .login-stage {
   position: relative;
   min-height: 600px;
@@ -55,40 +139,24 @@
 .polaroid.lp2 img { object-position: 50% 30%; }
 .polaroid.lp6 img { object-position: 50% 35%; }
 
-.login-center {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 440px;
-  display: flex;
-  flex-direction: column;
+/* ════════════════════════════════════════
+   SIGN UP — copy and card on the left, polaroid cluster on the right
+════════════════════════════════════════ */
+.signup-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: center;
-  text-align: center;
+  gap: 2rem;
+  min-height: 560px;
 }
 
-.login-center h2 {
-  font-family: 'Playfair Display', serif;
-  font-weight: 700;
-  font-size: clamp(2.6rem, 5vw, 3.6rem);
-  color: #fff;
-  margin-bottom: 0.4rem;
-}
+.signup-stage .auth-center { margin: 0 auto; }
 
-.login-subtitle {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.95rem;
-  letter-spacing: 0.03em;
-  color: #d8d2cb;
-  margin-bottom: 2rem;
-}
-
-.login-card {
-  width: 100%;
-  background: #ece6df;
-  border-radius: 10px;
-  padding: 2rem 2rem 1.75rem;
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
-}
+.signup-polaroids { position: relative; height: 440px; }
+.polaroid.sp1 { top: 16%; left: 0;   transform: rotate(-8deg); }
+.polaroid.sp2 { top: 0;   left: 44%; transform: rotate(7deg); }
+.polaroid.sp3 { top: 44%; left: 28%; transform: rotate(-4deg); }
+.polaroid.sp2 img { object-position: 50% 25%; }
 
 /* ════════════════════════════════════════
    FORM
@@ -125,7 +193,7 @@
   box-shadow: 0 0 0 3px rgba(185, 64, 64, 0.12);
 }
 
-.login-suggest {
+.auth-suggest {
   background: none;
   border: none;
   padding: 0;
@@ -141,7 +209,7 @@
   font-weight: 300;
 }
 
-.google-btn {
+.auth-submit {
   width: 100%;
   padding: 0.9rem 1.5rem;
   background: #1c1c1c;
@@ -158,25 +226,31 @@
   margin-top: 0.5rem;
 }
 
-.google-btn:hover:not(:disabled) { background: #c4a882; }
-.google-btn:active                { transform: scale(0.99); }
-.google-btn:disabled              { opacity: 0.5; cursor: not-allowed; }
+.auth-submit:hover:not(:disabled) { background: #c4a882; }
+.auth-submit:active               { transform: scale(0.99); }
+.auth-submit:disabled             { opacity: 0.5; cursor: not-allowed; }
 
-.login-error {
+.auth-error {
   color: #b94040;
   font-size: 0.83rem;
   background: #fff;
   padding: 0.5rem 0.75rem;
   border-radius: 4px;
   border-left: 3px solid #b94040;
+  text-align: left;
 }
 
-.login-hint {
-  font-size: 0.75rem;
-  color: #bdb6ae;
-  margin-top: 1.5rem;
-  text-align: center;
-  letter-spacing: 0.02em;
+/* An error that needs to offer a way out (e.g. no profile -> go sign up).
+   Also scoped under .site to beat that stylesheet's link reset. */
+.site .auth-error-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: #8a3030;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .otp-links {
@@ -225,7 +299,7 @@
 /* Matches Site.css's own .polaroid breakpoint (820px, where the frame
    itself shrinks to 170px) so sizing and repositioning change together. */
 @media (max-width: 820px) {
-  .login-hero { padding-top: clamp(6rem, 24vw, 7.5rem); }
+  .auth-hero { padding-top: clamp(6rem, 24vw, 7.5rem); }
 
   /* Percentage-based positions (fine on a wide desktop stage) put six
      170px-wide polaroids on top of the welcome text at phone width — not a
@@ -238,8 +312,12 @@
   .polaroid.lp2, .polaroid.lp3, .polaroid.lp5, .polaroid.lp6 { display: none; }
   .polaroid.lp1 { top: -10px; left: -54px;  transform: rotate(-10deg); }
   .polaroid.lp4 { top: -10px; right: -54px; transform: rotate(10deg); }
+  .login-stage .auth-center { margin-top: 150px; }
 
-  .login-center { margin-top: 150px; }
+  /* Sign-up has three fields and no room beside them, so the cluster goes
+     rather than being squeezed into something unreadable. */
+  .signup-stage { grid-template-columns: 1fr; min-height: 0; }
+  .signup-polaroids { display: none; }
 }
 
 @media (max-width: 420px) {
