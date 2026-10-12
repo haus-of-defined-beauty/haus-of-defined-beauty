@@ -171,7 +171,18 @@
   color: #cfcfcf;
 }
 .site-footer-col a:hover { color: #fff; }
-.site-footer-line { display: flex !important; align-items: center; gap: 0.5rem; }
+/* min-width/overflow-wrap: a handle is one long unbreakable word, so without
+   these it sets a min-content width the column can't honour and the end of it
+   gets clipped off the side of the page. */
+.site-footer-line {
+  display: flex !important;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+/* The building name reads as the heading of the address, not another line of it. */
+.site-footer-address p:first-of-type { font-weight: 700; color: #e8e8e8; }
 
 /* ── Polaroid photo frame (positioned per page) ── */
 .polaroid {
@@ -200,10 +211,41 @@
     background: rgba(28, 28, 28, 0.99);
   }
   .site-nav-links.open { display: flex; }
-  .site-footer-inner { grid-template-columns: 1fr 1fr; }
-  .site-footer-brand { grid-column: 1 / -1; }
+
+  /* Footer goes two-up rather than one long stack: logo beside Navigation,
+     then Address beside Contact. Placed explicitly because the source order
+     (brand, address, nav, contact) is the order the wide layout needs. */
+  /* Not an even split: the right-hand column carries the handles, which are
+     one long unbreakable string, while the left-hand one wraps happily.
+     minmax(0, …) because a plain fr floors at min-content, which let the
+     address column steal the width the handles needed. */
+  .site-footer-inner {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 2.25rem 1rem;
+  }
+  .site-footer-brand   { grid-column: 1; grid-row: 1; }
+  .site-footer-nav     { grid-column: 2; grid-row: 1; }
+  .site-footer-address { grid-column: 1; grid-row: 2; }
+  .site-footer-contact { grid-column: 2; grid-row: 2; }
+
+  .site-footer .site-logo { font-size: 1.05rem; }
+  .site-footer .site-logo-l1 { white-space: nowrap; } /* keep the wordmark on two lines */
+  /* Sized so a handle, and "Melville, Johannesburg", each still fit on one
+     line in half a phone's width. */
+  .site-footer-col p,
+  .site-footer-col a { font-size: 0.74rem; }
+  .site-footer-contact a { font-size: 0.7rem; }
+  .site-footer-line { gap: 0.4rem; }
+  .site-footer-col svg { width: 15px; height: 15px; }
 }
 
-@media (max-width: 520px) {
-  .site-footer-inner { grid-template-columns: 1fr; }
+/* Below this the two columns are narrower than a handle, so the footer goes
+   back to one column rather than breaking words across lines. */
+@media (max-width: 360px) {
+  .site-footer-inner { grid-template-columns: 1fr; gap: 1.75rem; }
+  .site-footer-brand,
+  .site-footer-nav,
+  .site-footer-address,
+  .site-footer-contact { grid-column: 1; grid-row: auto; }
+  .site-footer-contact a { font-size: 0.78rem; }
 }
