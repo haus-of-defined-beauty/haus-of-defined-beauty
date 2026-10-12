@@ -199,6 +199,7 @@
 .ac-confirm-q { font-size: 1rem; font-weight: 700; color: #1c1c1c; margin-bottom: 1.25rem; }
 .ac-confirm-details { background: #faf8f5; border: 1px solid #ede5de; border-radius: 6px; padding: 0.75rem 1rem; margin-bottom: 1.25rem; }
 .ac-confirm-details p { margin: 0.2rem 0; font-size: 0.9rem; color: #444; }
+.ac-confirm-note { font-size: 0.78rem; color: #8a6d2f; margin: -0.5rem 0 1.1rem; line-height: 1.5; }
 .ac-confirm-btns { display: flex; gap: 0.75rem; justify-content: center; }
 .ac-confirm-no  { padding: 0.45rem 1.5rem; border: 1px solid #e0d8d0; border-radius: 20px; background: #fff; color: #444; cursor: pointer; font-family: inherit; font-size: 0.85rem; }
 .ac-confirm-yes { padding: 0.45rem 1.5rem; border: none; border-radius: 20px; background: #1c1c1c; color: #c4a882; cursor: pointer; font-family: inherit; font-size: 0.85rem; font-weight: 600; }
