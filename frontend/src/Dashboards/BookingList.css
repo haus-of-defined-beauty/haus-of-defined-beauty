@@ -118,3 +118,53 @@
 .btn-reschedule:hover {
   background: #f0f6fb;
 }
+
+/* ── Phone ──
+   A six-column table can't fit a phone, and the dashboard's padding made it
+   worse — the whole page scrolled sideways (DEF-023). Each row becomes a card
+   with its column heading printed beside the value, so nothing goes off-screen. */
+@media (max-width: 720px) {
+  .booking-list table,
+  .booking-list tbody,
+  .booking-list tr,
+  .booking-list td { display: block; width: 100%; }
+
+  .booking-list thead { display: none; }
+
+  .booking-list table { border: none; background: none; }
+
+  .booking-list tr {
+    background: #fff;
+    border: 1px solid #ede5de;
+    border-radius: 8px;
+    margin-bottom: 0.85rem;
+    padding: 0.35rem 0.25rem;
+  }
+
+  .booking-list td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #f5f0eb;
+    text-align: right;
+  }
+
+  .booking-list tr td:last-child { border-bottom: none; }
+
+  .booking-list td::before {
+    content: attr(data-label);
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #aaa;
+    text-align: left;
+    flex-shrink: 0;
+  }
+
+  /* An empty action cell would otherwise show a stray "Action" label. */
+  .booking-list td.action-cell:empty { display: none; }
+  .booking-list td.action-cell { flex-wrap: wrap; justify-content: flex-end; }
+}

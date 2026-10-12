@@ -230,6 +230,10 @@
 .bw-slot:last-child { border-bottom: none; }
 .bw-slot:hover { background: #f8f8f8; }
 .bw-slot.picked { background: #e8f4e8; }
+/* Free for the salon, but the customer is already booked over it. */
+.bw-slot.taken { color: #aaa; cursor: not-allowed; background: #fafafa; }
+.bw-slot.taken:hover { background: #fafafa; }
+.bw-slot-taken { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: #b94040; }
 .bw-slot-add { font-size: 1.2rem; color: #555; font-weight: 300; }
 
 .bw-slots-toggle {
@@ -333,3 +337,39 @@
 }
 .bw-btn-dark:hover { background: #333; }
 .bw-btn-dark:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Phone ──
+   The booking page had no mobile layout at all: the service list and the time
+   slots sat side by side, the day strip was a fixed row of seven buttons, and
+   step 2 was another two-column split — together they pushed the page wider
+   than the screen and it scrolled sideways (DEF-023). */
+@media (max-width: 720px) {
+  .bw-main { padding: 1rem 1rem 2rem; }
+
+  /* Columns stack instead of competing for width. */
+  .bw-step1-body,
+  .bw-step2 { flex-direction: column; gap: 1.5rem; }
+  .bw-step1-body:not(.with-slots) .bw-services { max-width: none; }
+
+  /* Seven day buttons spread across whatever width there is, rather than
+     overflowing at a fixed size. */
+  .bw-day-strip {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.25rem;
+    padding: 0.5rem 0.4rem;
+    justify-items: center;
+  }
+  .bw-day-btn { width: 100%; max-width: 38px; }
+
+  .bw-cart-btns { justify-content: stretch; }
+  .bw-cart-btns button { flex: 1; }
+
+  .bw-field-label { min-width: 0; }
+  .bw-confirm-card { padding: 1.25rem; }
+
+  /* Long service names and dates wrap instead of forcing the row wider. */
+  .bw-cart-item { gap: 0.75rem; }
+  .bw-cart-info { min-width: 0; }
+  .bw-cart-name, .bw-cart-dt { overflow-wrap: anywhere; }
+}

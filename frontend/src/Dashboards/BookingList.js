@@ -68,11 +68,13 @@ function BookingList({ isAdmin }) {
         <tbody>
           {bookings.map(b => (
             <tr key={b._id}>
-              {isAdmin && <td>{b.customerId?.name || '—'}</td>}
-              <td>{b.serviceId?.name || '—'}</td>
-              <td>{new Date(b.date).toLocaleDateString('en-ZA')}</td>
-              <td>{b.time}</td>
-              <td>
+              {/* data-label drives the stacked card layout at phone width
+                  (see BookingList.css), where there's no room for columns. */}
+              {isAdmin && <td data-label="Customer">{b.customerId?.name || '—'}</td>}
+              <td data-label="Service">{b.serviceId?.name || '—'}</td>
+              <td data-label="Date">{new Date(b.date).toLocaleDateString('en-ZA')}</td>
+              <td data-label="Time">{b.time}</td>
+              <td data-label="Status">
                 {isAdmin ? (
                   <select
                     className="status-select"
@@ -88,7 +90,7 @@ function BookingList({ isAdmin }) {
                   </span>
                 )}
               </td>
-              <td className="action-cell">
+              <td className="action-cell" data-label="Action">
                 {['pending', 'confirmed'].includes(b.status) && !isAdmin && (
                   <button className="btn-reschedule" onClick={() => setRescheduleTarget(b)}>Reschedule</button>
                 )}
