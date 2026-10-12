@@ -59,6 +59,10 @@
 
 /* ── Logo (bordered wordmark box + pill) ── */
 .site-logo { display: inline-flex; flex-direction: column; align-items: center; font-size: 1rem; }
+/* In the nav the wordmark sits beside the links, where it reads as a mark
+   rather than a second headline. Everything in the lockup is em-based, so
+   this one value scales the whole box. The footer keeps the larger version. */
+.site-nav .site-logo { font-size: 0.62rem; }
 .site-logo-box {
   position: relative;
   display: inline-flex;
