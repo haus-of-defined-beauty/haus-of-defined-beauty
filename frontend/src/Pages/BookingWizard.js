@@ -88,10 +88,13 @@ export default function BookingWizard() {
   }, []);
 
   useEffect(() => {
-    axios.get(`/api/calendar/${isoDate(selectedDay)}`)
+    // Availability belongs to a particular artist, so once a service is
+    // chosen only the slots opened by someone who does that service count.
+    const forService = activeService ? `?serviceId=${activeService._id}` : '';
+    axios.get(`/api/calendar/${isoDate(selectedDay)}${forService}`)
       .then(res => setDaySlots(res.data.slots || []))
       .catch(() => setDaySlots([]));
-  }, [selectedDay]);
+  }, [selectedDay, activeService]);
 
   // Handles landing back here after a PayFast redirect (return_url/cancel_url).
   // Local state (cart, step) is gone on a fresh page load, so this rebuilds
@@ -162,6 +165,25 @@ export default function BookingWizard() {
   function inCart(time) {
     const iso = isoDate(selectedDay);
     return cart.some(c => c.time === time && c.isoDate === iso);
+  }
+
+  const toMins = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+
+  // A customer can't sit in two chairs at once, so a slot that runs into
+  // something already in their basket can't be picked — the two artists being
+  // free at the same time doesn't help them. Checked here as well as on the
+  // server so the clash is visible before they try to pay.
+  function clashesWithCart(time) {
+    if (!activeService) return false;
+    const iso = isoDate(selectedDay);
+    const start = toMins(time);
+    const end = start + activeService.duration;
+    return cart.some(c =>
+      c.isoDate === iso &&
+      c.service._id !== activeService._id && // the one being re-picked doesn't clash with itself
+      start < toMins(c.endTime) &&
+      toMins(c.time) < end
+    );
   }
 
   async function handleContinue() {
@@ -314,14 +336,18 @@ export default function BookingWizard() {
               <div className="bw-slot-list">
                 {daySlots.filter(s => s.status === 'available').map(slot => {
                   const picked = inCart(slot.start);
+                  const clashes = !picked && clashesWithCart(slot.start);
                   const end = activeService ? addMins(slot.start, activeService.duration) : '';
                   return (
                     <div key={slot._id}
-                      className={`bw-slot${picked ? ' picked' : ''}`}
-                      onClick={() => selectSlot(slot.start)}
+                      className={`bw-slot${picked ? ' picked' : ''}${clashes ? ' taken' : ''}`}
+                      title={clashes ? 'You already have another service booked over this time' : undefined}
+                      onClick={() => !clashes && selectSlot(slot.start)}
                     >
                       <span>{slot.start}{end ? ` - ${end}` : ''}</span>
-                      {!picked && <span className="bw-slot-add">+</span>}
+                      {picked ? null : clashes
+                        ? <span className="bw-slot-taken">Clashes</span>
+                        : <span className="bw-slot-add">+</span>}
                     </div>
                   );
                 })}

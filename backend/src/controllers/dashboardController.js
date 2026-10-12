@@ -1,5 +1,6 @@
 const Booking = require('../models/Booking');
 const Payment = require('../models/Payment');
+const { ownBookingsFilter } = require('../utils/ownBookings');
 
 function startOfDay(d) { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; }
 function endOfDay(d) { const x = new Date(d); x.setHours(23, 59, 59, 999); return x; }
@@ -28,6 +29,7 @@ const getSchedule = async (req, res) => {
     const { period = 'today', date } = req.query;
     const [start, end] = rangeForPeriod(period, date);
     const bookings = await Booking.find({
+      ...ownBookingsFilter(req.user.id),
       date: { $gte: start, $lte: end },
       status: { $in: ['pending', 'confirmed', 'completed'] },
     }).populate('customerId serviceId').sort('date time');
@@ -50,7 +52,7 @@ const getSchedule = async (req, res) => {
 // Booking history — most recently completed appointments.
 const getHistory = async (req, res) => {
   try {
-    const bookings = await Booking.find({ status: 'completed' })
+    const bookings = await Booking.find({ ...ownBookingsFilter(req.user.id), status: 'completed' })
       .populate('customerId serviceId')
       .sort('-date -time')
       .limit(10);
@@ -73,7 +75,7 @@ const getHistory = async (req, res) => {
 // only money that actually moved through the app — not the service price.
 const getCancelledAwaitingRefund = async (req, res) => {
   try {
-    const bookings = await Booking.find({ status: 'cancelled' })
+    const bookings = await Booking.find({ ...ownBookingsFilter(req.user.id), status: 'cancelled' })
       .populate('customerId serviceId')
       .sort('-updatedAt');
     const groupIds = [...new Set(bookings.map(b => b.groupId.toString()))];

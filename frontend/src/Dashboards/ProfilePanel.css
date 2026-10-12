@@ -141,3 +141,44 @@
   border-left: 3px solid #b94040;
   margin-bottom: 1rem;
 }
+
+/* ── Admin: which services this artist works on ── */
+.profile-specialties {
+  border: 1px solid #ede5de;
+  border-radius: 8px;
+  padding: 1rem 1.1rem 1.1rem;
+  margin: 0.25rem 0 0.5rem;
+}
+
+.profile-specialties legend {
+  padding: 0 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #1c1c1c;
+}
+
+.profile-hint {
+  font-size: 0.78rem;
+  color: #aaa;
+  line-height: 1.5;
+  margin-bottom: 0.85rem;
+}
+
+.profile-specialty-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.25rem;
+}
+
+.profile-specialty {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.9rem;
+  color: #444;
+  cursor: pointer;
+}
+
+.profile-specialty input { accent-color: #c4a882; cursor: pointer; }

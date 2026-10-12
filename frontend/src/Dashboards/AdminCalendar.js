@@ -85,6 +85,7 @@ export default function AdminCalendar() {
   const [addStart, setAddStart] = useState('');
   const [addEnd, setAddEnd] = useState('');
   const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmCancel, setConfirmCancel] = useState(false); // cancelling a booking is irreversible
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [formError, setFormError] = useState('');
@@ -97,7 +98,9 @@ export default function AdminCalendar() {
     return Promise.all(
       days.map((d, dayIndex) => {
         const iso = isoDate(d);
-        return axios.get(`/api/calendar/${iso}`)
+        // mine=1: an artist's calendar is their own availability and bookings,
+        // not the other artist's as well.
+        return axios.get(`/api/calendar/${iso}?mine=1`)
           .then(res => (res.data.slots || []).map(slot => slotToEvent(slot, dayIndex, iso)))
           .catch(() => []);
       })
@@ -165,12 +168,14 @@ export default function AdminCalendar() {
 
   async function handleCancelBooking() {
     if (!selectedBooking) return;
+    setConfirmCancel(false);
     try {
       await axios.patch(`/api/bookings/${selectedBooking.id}/cancel`);
       setSelectedBooking(null);
+      setSlotError('');
       await loadWeek();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to cancel booking.');
+      setSlotError(err.response?.data?.message || 'Failed to cancel booking.');
     }
   }
 
@@ -243,7 +248,8 @@ export default function AdminCalendar() {
               <p><span className="ac-bd-key">Date:</span> {selectedBooking.date}</p>
               <p><span className="ac-bd-key">Time:</span> {selectedBooking.time}</p>
               <p><span className="ac-bd-key">Services:</span> {selectedBooking.service}</p>
-              <button className="ac-cancel-booking" onClick={handleCancelBooking}>Cancel</button>
+              <button className="ac-cancel-booking" onClick={() => setConfirmCancel(true)}>Cancel booking</button>
+              {slotError && <p className="ac-form-error">{slotError}</p>}
             </div>
           )}
         </div>
@@ -305,6 +311,29 @@ export default function AdminCalendar() {
           </div>
         </div>
       </div>
+
+      {/* Cancelling is irreversible and emails the customer, so it asks first
+          — and asks in the same dialog style as the rest of the calendar. */}
+      {confirmCancel && selectedBooking && (
+        <div className="ac-overlay" onClick={() => setConfirmCancel(false)}>
+          <div className="ac-confirm-dialog" onClick={e => e.stopPropagation()}>
+            <p className="ac-confirm-q">Cancel this booking?</p>
+            <div className="ac-confirm-details">
+              <p>{selectedBooking.name}</p>
+              <p>{selectedBooking.service}</p>
+              <p>{selectedBooking.date}</p>
+              <p>{selectedBooking.time}</p>
+            </div>
+            <p className="ac-confirm-note">
+              The customer will be emailed and their booking fee refunded.
+            </p>
+            <div className="ac-confirm-btns">
+              <button className="ac-confirm-no" onClick={() => setConfirmCancel(false)}>Keep it</button>
+              <button className="ac-confirm-yes" onClick={handleCancelBooking}>Yes, cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Confirmation overlay */}
       {showConfirm && (
