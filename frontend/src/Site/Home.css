@@ -32,6 +32,36 @@
   mask-image: linear-gradient(to right, #000 86%, transparent);
 }
 
+/* The hero photo stays put while the page scrolls over it, instead of
+   sliding away with the rest of the section. Fixed rather than sticky so
+   only the photo is pinned — the headline and Book Now still scroll.
+   Nothing leaks through afterwards because every section below the hero
+   paints an opaque background of its own.
+   Desktop only: at phone width the hero is a different layout entirely,
+   and fixed backgrounds are unreliable on mobile browsers. */
+@media (min-width: 821px) {
+  .home-hero-media img {
+    position: fixed;
+    inset: auto;
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: min(92vh, 780px);
+  }
+
+  /* Everything below the hero has to paint above the pinned photo. A fixed
+     element is positioned, so by default it outranks these static sections
+     and the photo spills over them as the hero scrolls away. */
+  .home-intro,
+  .home-services,
+  .home-masterclass,
+  .home-testimonials,
+  .site-footer {
+    position: relative;
+    z-index: 1;
+  }
+}
+
 .home-hero-copy {
   position: relative;
   z-index: 2;
