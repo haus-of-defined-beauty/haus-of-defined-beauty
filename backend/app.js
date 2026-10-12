@@ -7,6 +7,7 @@ if (process.env.NODE_ENV !== 'production') require('dns').setServers(['8.8.8.8',
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const { connectDb } = require('./src/db');
 
 const authRoutes = require('./src/routes/auth.routes');
 const adminRoutes = require('./src/routes/adminRoutes');
@@ -31,9 +32,29 @@ app.use(express.urlencoded({
   verify: (req, res, buf) => { req.rawBody = buf.toString('utf8'); },
 }));
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+// Queries shouldn't sit in a buffer waiting for a connection that may never
+// come — without this a connection problem surfaces to the customer as
+// "Operation `admins.findOne()` buffering timed out after 10000ms" ten
+// seconds later. The middleware below waits for the connection properly and
+// says something useful if it can't be had.
+mongoose.set('bufferCommands', false);
+
+// A liveness check that deliberately needs no database, so it still answers
+// while the database is unreachable.
+app.get('/', (req, res) => res.json({ message: 'Haus of Defined Beauty API' }));
+
+app.use(async (req, res, next) => {
+  try {
+    await connectDb();
+    next();
+  } catch (err) {
+    console.error('[DB] connection failed:', err.message);
+    res.status(503).json({
+      code: 'DB_UNAVAILABLE',
+      message: 'We cannot reach the database at the moment. Please try again in a few minutes.',
+    });
+  }
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
@@ -45,7 +66,5 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/masterclass', masterclassRoutes);
 app.use('/api/reminders', reminderRoutes);
-
-app.get('/', (req, res) => res.json({ message: 'Haus of Defined Beauty API' }));
 
 module.exports = app;
