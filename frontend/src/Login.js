@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import logo from './assets/logo.jpeg';
 import SiteNav from './Site/SiteNav';
+import SiteFooter from './Site/SiteFooter';
+import polaroid1 from './assets/home/polaroid-1.jpg';
+import polaroid2 from './assets/home/polaroid-2.jpg';
+import polaroid3 from './assets/home/polaroid-3.jpg';
+import polaroid4 from './assets/about/polaroid-1.jpg';
+import polaroid5 from './assets/about/polaroid-2.jpg';
+import polaroid6 from './assets/home/service-nails.jpg';
 import { emailProblem, suggestEmail, normalizeEmail } from './utils/emailCheck';
 import { nameProblem, normalizeName } from './utils/nameCheck';
 import './Login.css';
@@ -144,130 +150,122 @@ function Login() {
   };
 
   return (
-    <div className="login-page">
-      {/* Same header as every other public page — gives this page the site's
-          look and, via the logo/links, a way back that isn't just the
-          browser's back button. */}
-      <div className="login-topnav"><SiteNav /></div>
+    // Same top-level wrapper every other public page uses (Home/About/etc.)
+    // instead of this page's own one-off — gives it the site's fonts, link
+    // resets and flex-column-with-footer layout for free, no overrides.
+    <div className="site">
+      <SiteNav />
 
-      <div className="login-container">
-
-      <div className="login-brand">
-        <div className="logo-scene">
-
-          {/* Spinning decorative rings */}
-          <div className="deco-ring r1" />
-          <div className="deco-ring r2" />
-          <div className="deco-ring r3" />
-
-          {/* Floating sparkles */}
-          <span className="spark sp1">✦</span>
-          <span className="spark sp2">✧</span>
-          <span className="spark sp3">✦</span>
-          <span className="spark sp4">✧</span>
-          <span className="spark sp5">✦</span>
-          <span className="spark sp6">✧</span>
-          <span className="spark sp7">✦</span>
-
-          {/* Logo box — wrapper handles spin, inner handles glow */}
-          <div className="logo-box-wrapper">
-            <div className="logo-box">
-              <img src={logo} alt="Haus of Defined Beauty" className="logo-img" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="login-form-side">
-        <div className="login-card">
+      <main>
+      <section className="login-hero site-marble">
+        <div className="login-hero-inner">
           <button type="button" className="login-back" onClick={goBack}>
             <span aria-hidden="true">←</span> Back
           </button>
-          <h2>Welcome</h2>
-          <p className="login-subtitle">
-            {step === 'email'
-              ? 'Sign in with your email to continue'
-              : `We emailed a number to ${form.email} — click the matching one below`}
-          </p>
 
-          {step === 'email' && (
-            <form className="otp-form" onSubmit={handleStart} noValidate>
-              <input
-                type="email"
-                placeholder="Email address"
-                value={form.email}
-                onChange={onEmailChange}
-                onBlur={onEmailBlur}
-                className={emailMsg ? 'input-invalid' : undefined}
-                aria-invalid={emailMsg ? 'true' : undefined}
-                aria-describedby={emailMsg ? 'login-email-msg' : undefined}
-                autoComplete="email"
-                autoCapitalize="none"
-                spellCheck={false}
-              />
-              {emailMsg && (
-                <p id="login-email-msg" className="login-error" role="alert">
-                  {emailHint ? (
-                    <>
-                      Did you mean{' '}
-                      <button type="button" className="login-suggest" onClick={useSuggestion}>{emailHint}</button>?
-                      {' '}If your address is correct, press Send Code again.
-                    </>
-                  ) : emailMsg}
-                </p>
-              )}
-              <input
-                type="text"
-                placeholder="Your name"
-                value={form.name}
-                onChange={onNameChange}
-                onBlur={onNameBlur}
-                className={nameMsg ? 'input-invalid' : undefined}
-                aria-invalid={nameMsg ? 'true' : undefined}
-                aria-describedby={nameMsg ? 'login-name-msg' : undefined}
-                autoComplete="name"
-                maxLength={80}
-              />
-              {nameMsg && <p id="login-name-msg" className="login-error" role="alert">{nameMsg}</p>}
-              {error && <p className="login-error">{error}</p>}
-              <button type="submit" className="google-btn" disabled={loading}>
-                {loading ? 'Sending…' : 'Send Code'}
-              </button>
-            </form>
-          )}
-
-          {step === 'numbers' && (
-            <div className="otp-form">
-              <div className="number-grid">
-                {options.map(n => (
-                  <button
-                    key={n}
-                    type="button"
-                    className="number-btn"
-                    onClick={() => handleSelect(n)}
-                    disabled={loading}
-                  >
-                    {n}
-                  </button>
-                ))}
-              </div>
-              {error && <p className="login-error">{error}</p>}
-              <div className="otp-links">
-                <button type="button" className="otp-link" onClick={() => { setStep('email'); setOptions([]); setError(''); }}>
-                  Change email
-                </button>
-                <button type="button" className="otp-link" onClick={handleResend} disabled={loading}>
-                  Resend code
-                </button>
-              </div>
+          <div className="login-stage">
+            {/* Decorative — the same real salon photos used on Home/About,
+                just scattered around the sign-in card here. */}
+            <div className="login-polaroids" aria-hidden="true">
+              <div className="polaroid lp1"><img src={polaroid1} alt="" /></div>
+              <div className="polaroid lp2"><img src={polaroid2} alt="" /></div>
+              <div className="polaroid lp3"><img src={polaroid3} alt="" /></div>
+              <div className="polaroid lp4"><img src={polaroid4} alt="" /></div>
+              <div className="polaroid lp5"><img src={polaroid5} alt="" /></div>
+              <div className="polaroid lp6"><img src={polaroid6} alt="" /></div>
             </div>
-          )}
 
-          <p className="login-hint">No password needed — just your email.</p>
+            <div className="login-center">
+              <h2>Welcome</h2>
+              <p className="login-subtitle">
+                {step === 'email'
+                  ? 'Sign in with your email to continue'
+                  : `We emailed a number to ${form.email} — click the matching one below`}
+              </p>
+
+              <div className="login-card">
+                {step === 'email' && (
+                  <form className="otp-form" onSubmit={handleStart} noValidate>
+                    <input
+                      type="email"
+                      placeholder="Email address"
+                      value={form.email}
+                      onChange={onEmailChange}
+                      onBlur={onEmailBlur}
+                      className={emailMsg ? 'input-invalid' : undefined}
+                      aria-invalid={emailMsg ? 'true' : undefined}
+                      aria-describedby={emailMsg ? 'login-email-msg' : undefined}
+                      autoComplete="email"
+                      autoCapitalize="none"
+                      spellCheck={false}
+                    />
+                    {emailMsg && (
+                      <p id="login-email-msg" className="login-error" role="alert">
+                        {emailHint ? (
+                          <>
+                            Did you mean{' '}
+                            <button type="button" className="login-suggest" onClick={useSuggestion}>{emailHint}</button>?
+                            {' '}If your address is correct, press Send Code again.
+                          </>
+                        ) : emailMsg}
+                      </p>
+                    )}
+                    <input
+                      type="text"
+                      placeholder="Your name"
+                      value={form.name}
+                      onChange={onNameChange}
+                      onBlur={onNameBlur}
+                      className={nameMsg ? 'input-invalid' : undefined}
+                      aria-invalid={nameMsg ? 'true' : undefined}
+                      aria-describedby={nameMsg ? 'login-name-msg' : undefined}
+                      autoComplete="name"
+                      maxLength={80}
+                    />
+                    {nameMsg && <p id="login-name-msg" className="login-error" role="alert">{nameMsg}</p>}
+                    {error && <p className="login-error">{error}</p>}
+                    <button type="submit" className="google-btn" disabled={loading}>
+                      {loading ? 'Sending…' : 'Send Code'}
+                    </button>
+                  </form>
+                )}
+
+                {step === 'numbers' && (
+                  <div className="otp-form">
+                    <div className="number-grid">
+                      {options.map(n => (
+                        <button
+                          key={n}
+                          type="button"
+                          className="number-btn"
+                          onClick={() => handleSelect(n)}
+                          disabled={loading}
+                        >
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+                    {error && <p className="login-error">{error}</p>}
+                    <div className="otp-links">
+                      <button type="button" className="otp-link" onClick={() => { setStep('email'); setOptions([]); setError(''); }}>
+                        Change email
+                      </button>
+                      <button type="button" className="otp-link" onClick={handleResend} disabled={loading}>
+                        Resend code
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <p className="login-hint">No password needed — just your email.</p>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
+      </main>
 
-      </div>
+      <SiteFooter />
     </div>
   );
 }
