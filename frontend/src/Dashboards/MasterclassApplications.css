@@ -1,0 +1,79 @@
+/* Reuses the dashboard's shared .dash-card / .dash-table styling so this tab
+   matches Bookings and Reports rather than inventing its own look. */
+.mca {
+  max-width: 1100px;
+}
+
+.mca h3 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  color: #1c1c1c;
+}
+
+.mca-date { white-space: nowrap; color: #1c1c1c; font-weight: 600; }
+.mca-email { color: #444; }
+.mca-actions { text-align: right; }
+
+.mca-reply {
+  display: inline-block;
+  padding: 0.3rem 0.9rem;
+  border: 1px solid #e0d8d0;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8a6d2f;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.mca-reply:hover { border-color: #c4a882; background: #faf6f0; }
+
+/* ── Phone ──
+   Four columns including an email address don't fit a phone, so each row
+   becomes a card with its heading beside the value — same treatment as the
+   bookings table. */
+@media (max-width: 720px) {
+  .mca .dash-table,
+  .mca .dash-table tbody,
+  .mca .dash-table tr,
+  .mca .dash-table td { display: block; width: 100%; }
+
+  .mca .dash-table thead { display: none; }
+
+  .mca .dash-table tr {
+    border: 1px solid #ede5de;
+    border-radius: 8px;
+    margin-bottom: 0.85rem;
+    padding: 0.25rem 0;
+  }
+
+  .mca .dash-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0.9rem;
+    border-bottom: 1px solid #f5f0eb;
+    text-align: right;
+  }
+
+  .mca .dash-table tr td:last-child { border-bottom: none; }
+
+  .mca .dash-table td::before {
+    content: attr(data-label);
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #aaa;
+    text-align: left;
+    flex-shrink: 0;
+  }
+
+  /* The email is the one value that still needs to be able to break. */
+  .mca-email { overflow-wrap: anywhere; text-align: right; }
+  .mca-actions { justify-content: flex-end; }
+}

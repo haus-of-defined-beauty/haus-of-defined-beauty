@@ -44,6 +44,15 @@ const apply = async (req, res) => {
       return res.status(429).json({ message: 'Too many applications from this connection. Please try again later.' });
     }
 
+    // One application per email — the same person submitting twice left the
+    // admin deciding which of two identical rows to act on.
+    if (await MasterclassApplication.exists({ email: e })) {
+      return res.status(409).json({
+        code: 'ALREADY_APPLIED',
+        message: 'There is already a masterclass application for that email address. We will be in touch soon.',
+      });
+    }
+
     await MasterclassApplication.create({ name: n, surname: s, email: e });
 
     const admins = await Admin.find().select('email');
@@ -58,4 +67,21 @@ const apply = async (req, res) => {
   }
 };
 
-module.exports = { apply };
+// GET /api/masterclass/applications — the admin-side list. Newest first,
+// since the admin works through whatever has just come in.
+const listApplications = async (req, res) => {
+  try {
+    const applications = await MasterclassApplication.find().sort('-createdAt');
+    res.json(applications.map(a => ({
+      id: a._id,
+      name: a.name,
+      surname: a.surname,
+      email: a.email,
+      appliedAt: a.createdAt,
+    })));
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = { apply, listApplications };

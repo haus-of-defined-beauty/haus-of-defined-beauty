@@ -4,12 +4,13 @@ import axios from 'axios';
 import Dashboard from './Dashboard';
 import BookingList from './BookingList';
 import AdminCalendar from './AdminCalendar';
+import MasterclassApplications from './MasterclassApplications';
 import Reports from './Reports';
 import ProfilePanel from './ProfilePanel';
 import logo from '../assets/logo.jpeg';
 import './Admin.css';
 
-const TABS = ['Dashboard', 'Bookings', 'Calendar', 'Reports', 'Profile'];
+const TABS = ['Dashboard', 'Bookings', 'Calendar', 'Masterclasses', 'Reports', 'Profile'];
 
 function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('Dashboard');
@@ -26,6 +27,7 @@ function AdminDashboard() {
       case 'Dashboard': return <Dashboard onGoToCalendar={() => setActiveTab('Calendar')} />;
       case 'Bookings': return <BookingList isAdmin />;
       case 'Calendar': return <AdminCalendar />;
+      case 'Masterclasses': return <MasterclassApplications />;
       case 'Reports': return <Reports />;
       case 'Profile': return <ProfilePanel isAdmin />;
       default: return null;

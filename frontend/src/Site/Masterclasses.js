@@ -84,6 +84,10 @@ function Masterclasses() {
         setNameMsg(message);
       } else if (code === 'INVALID_SURNAME') {
         setSurnameMsg(message);
+      } else if (code === 'ALREADY_APPLIED') {
+        // Shown against the email box, since that's the field that clashes.
+        setEmailMsg(message);
+        setEmailHint('');
       } else {
         setError(message || 'Something went wrong. Please try again.');
       }
