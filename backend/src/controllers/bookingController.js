@@ -259,12 +259,12 @@ async function settleCancellation(bookings, cancelledBy) {
   // Awaited: a serverless function is frozen once it responds, so emails still
   // in flight at that point would never be sent. notify() never throws.
   await Promise.all([
-    notify(customer?.email, customerMessage, 'Booking Cancelled', 'booking'),
+    notify(customer?.email, customerMessage, 'Booking Cancelled', 'cancelled'),
     ...admins.map(a => notify(
       a.email,
       `${customer?.name || 'A customer'}'s booking was cancelled by ${cancelledBy === 'admin' ? 'the salon' : 'the customer'}: ${what}. ${feeLine}`,
       'Booking Cancelled',
-      'booking'
+      'cancelled'
     )),
   ]);
 

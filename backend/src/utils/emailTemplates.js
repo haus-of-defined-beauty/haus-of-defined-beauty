@@ -17,6 +17,8 @@ const HEADER_IMAGES = {
   otp: process.env.EMAIL_HEADER_OTP_URL || `${WEBSITE_URL}/email/header-otp.jpg`,
   booking: process.env.EMAIL_HEADER_BOOKING_URL || `${WEBSITE_URL}/email/header-booking.jpg`,
   reminder: process.env.EMAIL_HEADER_REMINDER_URL || `${WEBSITE_URL}/email/header-reminder.jpg`,
+  cancelled: process.env.EMAIL_HEADER_CANCELLED_URL || `${WEBSITE_URL}/email/header-cancelled.jpg`,
+  profile: process.env.EMAIL_HEADER_PROFILE_URL || `${WEBSITE_URL}/email/header-profile.jpg`,
 };
 const DEFAULT_HEADER_KEY = 'booking';
 
