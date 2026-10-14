@@ -184,6 +184,48 @@ export default function AdminCalendar() {
     return new Date(addDate).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' });
   }
 
+  // The times an admin may actually open, so invalid ones are never
+  // selectable in the first place. A slot has to sit inside business hours,
+  // start later than now, and not land on one of their existing slots.
+  const OPEN_MIN = HOURS[0] * 60;
+  const CLOSE_MIN = (HOURS[HOURS.length - 1] + 1) * 60;
+  const toMins = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+  const label = m => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+
+  // SAST is UTC+2 year round, which is how the server reads a slot's time.
+  const nowMinsOnDate = () => {
+    if (!addDate) return -1;
+    const now = new Date();
+    const todayIso = isoDate(now);
+    if (addDate > todayIso) return -1;          // whole day still ahead
+    if (addDate < todayIso) return CLOSE_MIN;   // whole day gone
+    return now.getHours() * 60 + now.getMinutes();
+  };
+
+  const takenOnDate = events
+    .filter(e => e.date === addDate)
+    .map(e => ({ start: GRID_START + e.startMin, end: GRID_START + e.startMin + e.durationMin }));
+
+  const freeAt = m => !takenOnDate.some(t => m >= t.start && m < t.end);
+
+  const startOptions = [];
+  if (addDate) {
+    const cutoff = nowMinsOnDate();
+    for (let m = OPEN_MIN; m < CLOSE_MIN; m += 30) {
+      if (m > cutoff && freeAt(m)) startOptions.push(label(m));
+    }
+  }
+
+  // An end time can't run past closing, and can't run through an existing slot.
+  const endOptions = [];
+  if (addStart) {
+    const from = toMins(addStart);
+    for (let m = from + 30; m <= CLOSE_MIN; m += 30) {
+      if (takenOnDate.some(t => from < t.end && t.start < m)) break;
+      endOptions.push(label(m));
+    }
+  }
+
   // Mini calendar — show month of last day of week
   const displayMonth = new Date(weekStart);
   displayMonth.setDate(displayMonth.getDate() + 6);
@@ -211,18 +253,48 @@ export default function AdminCalendar() {
 
           <button className="ac-add-btn" onClick={openAddForm}>Add Time Slot</button>
 
-          {/* Add form */}
+          {/* Add form. The date and time choices are limited to what can
+              actually be added — business hours, not in the past, not already
+              taken — rather than accepting anything and erroring afterwards. */}
           {showAddForm && (
             <div className="ac-add-form">
               <div className="ac-form-row">
-                <input type="date" className="ac-date-input" value={addDate} onChange={e => setAddDate(e.target.value)} />
+                <input
+                  type="date"
+                  className="ac-date-input"
+                  value={addDate}
+                  min={isoDate(new Date())}
+                  onChange={e => { setAddDate(e.target.value); setAddStart(''); setAddEnd(''); }}
+                />
                 <button className="ac-form-cancel" onClick={() => setShowAddForm(false)}>Cancel</button>
               </div>
               <div className="ac-form-row">
-                <input type="time" className="ac-time-input" value={addStart} onChange={e => setAddStart(e.target.value)} />
+                <select
+                  className="ac-time-input"
+                  value={addStart}
+                  disabled={!addDate}
+                  onChange={e => { setAddStart(e.target.value); setAddEnd(''); }}
+                  aria-label="Start time"
+                >
+                  <option value="">From</option>
+                  {startOptions.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
                 <span className="ac-time-sep">-</span>
-                <input type="time" className="ac-time-input" value={addEnd} onChange={e => setAddEnd(e.target.value)} />
-                <button className="ac-form-add" onClick={() => addDate && addStart && addEnd && setShowConfirm(true)}>Add</button>
+                <select
+                  className="ac-time-input"
+                  value={addEnd}
+                  disabled={!addStart}
+                  onChange={e => setAddEnd(e.target.value)}
+                  aria-label="End time"
+                >
+                  <option value="">To</option>
+                  {endOptions.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+                <button
+                  className="ac-form-add"
+                  disabled={!addDate || !addStart || !addEnd}
+                  onClick={() => setShowConfirm(true)}
+                >Add</button>
               </div>
               {formError && <p className="ac-form-error">{formError}</p>}
             </div>

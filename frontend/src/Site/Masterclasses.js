@@ -11,6 +11,7 @@ function Masterclasses() {
   const [form, setForm] = useState({ name: '', surname: '', email: '', website: '' });
   const [status, setStatus] = useState('idle'); // idle | sending | done
   const [error, setError] = useState('');
+  const [confirming, setConfirming] = useState(false); // review step before sending
   const [emailMsg, setEmailMsg] = useState('');   // prompt shown under the email box
   const [emailHint, setEmailHint] = useState('');  // a likely typo fix, e.g. name@gmail.com
   const [keptEmail, setKeptEmail] = useState('');  // typo-looking address the user chose to keep
@@ -55,7 +56,9 @@ function Masterclasses() {
     return true;
   };
 
-  const submit = async e => {
+  // Pressing Apply checks the form and then asks for confirmation, so an
+  // application is never submitted on a single stray click.
+  const submit = e => {
     e.preventDefault();
     setError('');
     // Check every box so all problems are shown at once.
@@ -65,7 +68,12 @@ function Masterclasses() {
     setSurnameMsg(surnameIssue);
     const emailOk = emailIsOk();
     if (nameIssue || surnameIssue || !emailOk) return;
+    setConfirming(true);
+  };
 
+  const sendApplication = async () => {
+    setConfirming(false);
+    setError('');
     setStatus('sending');
     try {
       await axios.post('/api/masterclass/apply', {
@@ -172,6 +180,29 @@ function Masterclasses() {
                     {status === 'sending' ? 'Sending…' : 'Apply'}
                   </button>
                 </form>
+              )}
+
+              {/* Confirm what's being sent before it goes — an application
+                  can only be made once per email address. */}
+              {confirming && (
+                <div className="mc-overlay" onClick={() => setConfirming(false)}>
+                  <div className="mc-confirm" onClick={e => e.stopPropagation()}>
+                    <h3>Send this application?</h3>
+                    <dl className="mc-confirm-details">
+                      <div><dt>Name</dt><dd>{normalizeName(form.name)} {normalizeName(form.surname)}</dd></div>
+                      <div><dt>Email</dt><dd>{normalizeEmail(form.email)}</dd></div>
+                    </dl>
+                    <p className="mc-confirm-note">We'll be in touch at this address about the next masterclass.</p>
+                    <div className="mc-confirm-btns">
+                      <button type="button" className="mc-confirm-back" onClick={() => setConfirming(false)}>
+                        Go back
+                      </button>
+                      <button type="button" className="mc-submit" onClick={sendApplication}>
+                        Yes, send it
+                      </button>
+                    </div>
+                  </div>
+                </div>
               )}
             </section>
           </div>

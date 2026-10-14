@@ -117,3 +117,77 @@
   .mc-photo-copy { left: 1.5rem; right: 1.5rem; bottom: 3.75rem; }
   .mc-card { margin: -2.5rem 0.75rem 0; padding: 2rem 1.5rem 2.25rem; }
 }
+
+/* ── Confirm before sending ──
+   An application can only be made once per email, so it's worth a look
+   before it goes. */
+.mc-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 20, 20, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  z-index: 999;
+}
+
+.mc-confirm {
+  background: #fff;
+  color: #1c1c1c;
+  border-radius: 8px;
+  padding: 1.75rem;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+}
+
+.mc-confirm h3 {
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 1.1rem;
+}
+
+.mc-confirm-details {
+  background: #faf8f5;
+  border: 1px solid #ede5de;
+  border-radius: 6px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.9rem;
+  text-align: left;
+}
+.mc-confirm-details > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.3rem 0;
+}
+.mc-confirm-details dt {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #aaa;
+}
+.mc-confirm-details dd { font-size: 0.9rem; color: #1c1c1c; overflow-wrap: anywhere; text-align: right; }
+
+.mc-confirm-note { font-size: 0.8rem; color: #888; line-height: 1.5; margin-bottom: 1.25rem; }
+
+.mc-confirm-btns { display: flex; gap: 0.75rem; }
+.mc-confirm-btns button { flex: 1; }
+
+.mc-confirm-back {
+  padding: 0.75rem 1rem;
+  border: 1px solid #d8cfc4;
+  border-radius: 4px;
+  background: #fff;
+  color: #1c1c1c;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.mc-confirm-back:hover { background: #faf8f5; }
