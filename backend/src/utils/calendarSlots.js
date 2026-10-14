@@ -1,4 +1,5 @@
 const Calendar = require('../models/Calendar');
+const Admin = require('../models/Admin');
 
 const OPEN_HOUR = 8;
 const CLOSE_HOUR = 17;
@@ -9,19 +10,39 @@ function pad(n) { return String(n).padStart(2, '0'); }
 function toTime(mins) { return `${pad(Math.floor(mins / 60))}:${pad(mins % 60)}`; }
 function toMin(t) { const [h, m] = t.split(':').map(Number); return h * 60 + m; }
 
-// Finds the Calendar day for a date, creating it empty on first touch.
+// The opening-hours template a day starts with, laid out once per artist so
+// every slot has an owner. Without an owner a slot is availability for
+// nobody in particular, which is what previously let the nail artist's hours
+// be booked for hair.
+function defaultSlotsFor(dateObj, adminIds) {
+  if (CLOSED_WEEKDAYS.includes(dateObj.getUTCDay())) return [];
+  const slots = [];
+  for (const adminId of adminIds) {
+    for (let m = OPEN_HOUR * 60; m < CLOSE_HOUR * 60; m += SLOT_MINUTES) {
+      slots.push({ start: toTime(m), end: toTime(m + SLOT_MINUTES), status: 'available', adminId });
+    }
+  }
+  return slots;
+}
+
+// Finds the Calendar day for a date, laying out the opening-hours template
+// for each artist the first time anyone touches it — so the salon has
+// availability without anyone having to build a calendar by hand.
 //
-// Days used to be pre-filled with an hourly 08:00–17:00 template, which meant
-// the salon appeared available at every hour of every day whether or not
-// anyone was working, and left those slots belonging to no particular admin —
-// so one artist's "availability" could be booked for the other's services.
-// Availability is now only what an admin actually opens.
+// Only the *first* touch does this. Once the day exists, it's whatever the
+// artists have made it: slots they removed stay removed, and a day they've
+// emptied stays empty.
 async function getOrCreateDay(dateStr) {
   const dateObj = new Date(dateStr);
   let day = await Calendar.findOne({ date: dateObj });
   if (day) return day;
+
+  const admins = await Admin.find().select('_id');
   try {
-    day = await Calendar.create({ date: dateObj, slots: [] });
+    day = await Calendar.create({
+      date: dateObj,
+      slots: defaultSlotsFor(dateObj, admins.map(a => a._id)),
+    });
   } catch (err) {
     if (err.code === 11000) { // lost a race to create the same day — use theirs
       day = await Calendar.findOne({ date: dateObj });

@@ -35,6 +35,12 @@ function isoDate(d) {
   return `${y}-${m}-${day}`;
 }
 
+function tomorrow() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d;
+}
+
 function getMondayOf(date) {
   const d = new Date(date);
   const day = d.getDay();
@@ -62,8 +68,10 @@ export default function BookingWizard() {
   const [expanded, setExpanded] = useState({});
   const [showSlots, setShowSlots] = useState(false);
   const [activeService, setActiveService] = useState(null);
-  const [weekStart, setWeekStart] = useState(getMondayOf(new Date()));
-  const [selectedDay, setSelectedDay] = useState(new Date());
+  // Bookings need a day's notice, so the earliest bookable day is tomorrow —
+  // opening on today just showed a day with nothing selectable on it.
+  const [weekStart, setWeekStart] = useState(getMondayOf(tomorrow()));
+  const [selectedDay, setSelectedDay] = useState(tomorrow());
   const [daySlots, setDaySlots] = useState([]);
 
   const [creating, setCreating] = useState(false);

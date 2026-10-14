@@ -31,6 +31,27 @@ const getCalendarByDate = async (req, res) => {
       // Slots with no owner predate per-admin availability, so they stay
       // bookable for anything rather than vanishing from existing days.
       slots = slots.filter(s => !s.adminId || allowed.includes(String(s.adminId)));
+
+      // Both artists can be open at the same hour. The customer only needs to
+      // know the salon is free then, so show one entry per time — and prefer
+      // a free one, since the hour is still bookable if either is free.
+      const byTime = new Map();
+      for (const s of slots) {
+        const seen = byTime.get(s.start);
+        if (!seen || (seen.status !== 'available' && s.status === 'available')) byTime.set(s.start, s);
+      }
+      slots = [...byTime.values()];
+
+      // Bookings need a day's notice, so today and anything already past is
+      // never offered — showing them only invites an error at the last step.
+      const earliest = new Date();
+      earliest.setHours(0, 0, 0, 0);
+      earliest.setDate(earliest.getDate() + 1);
+      if (new Date(req.params.date) < earliest) slots = [];
+
+      slots = slots
+        .filter(s => s.status === 'available')
+        .sort((a, b) => toMin(a.start) - toMin(b.start));
     }
 
     if (req.query.mine === '1' && req.user?.role === 'admin') {
