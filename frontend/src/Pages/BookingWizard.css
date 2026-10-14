@@ -373,3 +373,22 @@
   .bw-cart-info { min-width: 0; }
   .bw-cart-name, .bw-cart-dt { overflow-wrap: anywhere; }
 }
+
+/* ── iOS button colour ──
+   A <button> with no colour of its own inherits the browser's default, and
+   on iOS Safari that default is the system blue — so the service headers,
+   Cancel Booking, the day numbers and the slots toggle all came out blue on
+   a phone while looking black on a desktop. Stating the colour outright is
+   the fix; -webkit-appearance stops iOS re-styling them generally. */
+.bw-cat-header,
+.bw-btn-outline,
+.bw-slots-toggle,
+.bw-day-btn,
+.bw-cal-icon {
+  color: #1c1c1c;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Restated after the block above so the disabled day keeps its grey. */
+.bw-day-btn:disabled { color: #ccc; }
