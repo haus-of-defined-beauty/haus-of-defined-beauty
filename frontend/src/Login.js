@@ -25,9 +25,9 @@ function Login() {
     if (location.key !== 'default') navigate(-1);
     else navigate('/');
   };
-  const [step, setStep] = useState('email'); // 'email' | 'numbers'
+  const [step, setStep] = useState('email'); // 'email' | 'code'
   const [form, setForm] = useState({ email: '', name: '' });
-  const [options, setOptions] = useState([]);
+  const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [noProfile, setNoProfile] = useState(false); // show a way to sign up instead
   const [loading, setLoading] = useState(false);
@@ -100,8 +100,8 @@ function Login() {
         name,
       });
       setForm(f => ({ ...f, email, name }));
-      setOptions(data.options);
-      setStep('numbers');
+      setCode('');
+      setStep('code');
     } catch (err) {
       const { code, message } = err.response?.data || {};
       if (code === 'INVALID_EMAIL') {
@@ -122,13 +122,15 @@ function Login() {
     }
   };
 
-  const handleSelect = async selected => {
+  const handleVerify = async e => {
+    e.preventDefault();
+    if (code.length !== 6) { setError('Enter the 6-digit code from your email.'); return; }
     setError('');
     setLoading(true);
     try {
       const { data } = await axios.post('/api/auth/login/verify', {
         email: form.email,
-        selected,
+        code,
         name: normalizeName(form.name),
       });
       localStorage.setItem('token', data.token);
@@ -136,7 +138,8 @@ function Login() {
       axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
       navigate(data.user.role === 'admin' ? '/admin' : '/customer');
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid selection.');
+      setError(err.response?.data?.message || 'That code could not be checked. Please try again.');
+      setCode('');
     } finally {
       setLoading(false);
     }
@@ -146,11 +149,11 @@ function Login() {
     setError('');
     setLoading(true);
     try {
-      const { data } = await axios.post('/api/auth/login/start', {
+      await axios.post('/api/auth/login/start', {
         email: form.email,
         name: normalizeName(form.name),
       });
-      setOptions(data.options);
+      setCode('');
     } catch (err) {
       setError(err.response?.data?.message || 'Could not resend code.');
     } finally {
@@ -189,7 +192,7 @@ function Login() {
               <p className="auth-subtitle">
                 {step === 'email'
                   ? 'Sign in with your email to continue'
-                  : `We emailed a number to ${form.email} — click the matching one below`}
+                  : `We emailed a 6-digit code to ${form.email} — enter it below`}
               </p>
 
               {/* Carried over from the sign-up screen, which sends people
@@ -259,31 +262,32 @@ function Login() {
                   </form>
                 )}
 
-                {step === 'numbers' && (
-                  <div className="otp-form">
-                    <div className="number-grid">
-                      {options.map(n => (
-                        <button
-                          key={n}
-                          type="button"
-                          className="number-btn"
-                          onClick={() => handleSelect(n)}
-                          disabled={loading}
-                        >
-                          {n}
-                        </button>
-                      ))}
-                    </div>
+                {step === 'code' && (
+                  <form className="otp-form" onSubmit={handleVerify} noValidate>
+                    <input
+                      className="code-input"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      placeholder="000000"
+                      maxLength={6}
+                      value={code}
+                      autoFocus
+                      onChange={e => { setCode(e.target.value.replace(/\D/g, '').slice(0, 6)); setError(''); }}
+                      aria-label="6-digit code from your email"
+                    />
                     {error && <p className="auth-error" role="alert">{error}</p>}
+                    <button type="submit" className="auth-submit" disabled={loading || code.length !== 6}>
+                      {loading ? 'Checking…' : 'Sign In'}
+                    </button>
                     <div className="otp-links">
-                      <button type="button" className="otp-link" onClick={() => { setStep('email'); setOptions([]); setError(''); }}>
+                      <button type="button" className="otp-link" onClick={() => { setStep('email'); setCode(''); setError(''); }}>
                         Change email
                       </button>
                       <button type="button" className="otp-link" onClick={handleResend} disabled={loading}>
                         Resend code
                       </button>
                     </div>
-                  </div>
+                  </form>
                 )}
               </div>
 

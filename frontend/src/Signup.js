@@ -24,13 +24,13 @@ function Signup() {
     else navigate('/');
   };
 
-  const [step, setStep] = useState('details'); // 'details' | 'numbers'
+  const [step, setStep] = useState('details'); // 'details' | 'code'
   const [form, setForm] = useState({
     email: handedOver.email || '',
     name: handedOver.name || '',
     phone: '',
   });
-  const [options, setOptions] = useState([]);
+  const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [alreadyExists, setAlreadyExists] = useState(false); // offer sign-in instead
   const [loading, setLoading] = useState(false);
@@ -96,8 +96,8 @@ function Signup() {
     try {
       const { data } = await axios.post('/api/auth/signup/start', { email, name, phone });
       setForm({ email, name, phone });
-      setOptions(data.options);
-      setStep('numbers');
+      setCode('');
+      setStep('code');
     } catch (err) {
       const { code, message } = err.response?.data || {};
       if (code === 'INVALID_EMAIL') { setEmailMsg(message); setEmailHint(''); }
@@ -112,16 +112,19 @@ function Signup() {
     }
   };
 
-  const handleSelect = async selected => {
+  const handleVerify = async e => {
+    e.preventDefault();
+    if (code.length !== 6) { setError('Enter the 6-digit code from your email.'); return; }
     setError('');
     setLoading(true);
     try {
-      await axios.post('/api/auth/signup/verify', { email: form.email, selected });
+      await axios.post('/api/auth/signup/verify', { email: form.email, code });
       // The profile exists now but isn't signed in — signing in is its own
       // step, so hand over to the sign-in screen with a note of what happened.
       navigate('/login', { state: { profileCreated: true, name: form.name } });
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid selection.');
+      setError(err.response?.data?.message || 'That code could not be checked. Please try again.');
+      setCode('');
     } finally {
       setLoading(false);
     }
@@ -131,12 +134,12 @@ function Signup() {
     setError('');
     setLoading(true);
     try {
-      const { data } = await axios.post('/api/auth/signup/start', {
+      await axios.post('/api/auth/signup/start', {
         email: form.email,
         name: form.name,
         phone: form.phone,
       });
-      setOptions(data.options);
+      setCode('');
     } catch (err) {
       setError(err.response?.data?.message || 'Could not resend the code.');
     } finally {
@@ -161,7 +164,7 @@ function Signup() {
                 <p className="auth-subtitle">
                   {step === 'details'
                     ? 'Create a profile with just your name, email address and number — no password needed'
-                    : `We emailed a number to ${form.email} — click the matching one below to confirm it`}
+                    : `We emailed a 6-digit code to ${form.email} — enter it below to confirm it`}
                 </p>
 
                 <div className="auth-card">
@@ -238,31 +241,32 @@ function Signup() {
                     </form>
                   )}
 
-                  {step === 'numbers' && (
-                    <div className="otp-form">
-                      <div className="number-grid">
-                        {options.map(n => (
-                          <button
-                            key={n}
-                            type="button"
-                            className="number-btn"
-                            onClick={() => handleSelect(n)}
-                            disabled={loading}
-                          >
-                            {n}
-                          </button>
-                        ))}
-                      </div>
+                  {step === 'code' && (
+                    <form className="otp-form" onSubmit={handleVerify} noValidate>
+                      <input
+                        className="code-input"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        placeholder="000000"
+                        maxLength={6}
+                        value={code}
+                        autoFocus
+                        onChange={e => { setCode(e.target.value.replace(/\D/g, '').slice(0, 6)); setError(''); }}
+                        aria-label="6-digit code from your email"
+                      />
                       {error && <p className="auth-error" role="alert">{error}</p>}
+                      <button type="submit" className="auth-submit" disabled={loading || code.length !== 6}>
+                        {loading ? 'Checking…' : 'Confirm Email'}
+                      </button>
                       <div className="otp-links">
-                        <button type="button" className="otp-link" onClick={() => { setStep('details'); setOptions([]); setError(''); }}>
+                        <button type="button" className="otp-link" onClick={() => { setStep('details'); setCode(''); setError(''); }}>
                           Change details
                         </button>
                         <button type="button" className="otp-link" onClick={handleResend} disabled={loading}>
                           Resend code
                         </button>
                       </div>
-                    </div>
+                    </form>
                   )}
                 </div>
 

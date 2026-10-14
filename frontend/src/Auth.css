@@ -272,28 +272,31 @@
 .otp-link:hover { text-decoration: underline; }
 .otp-link:disabled { color: #ccc; cursor: not-allowed; text-decoration: none; }
 
-.number-grid {
-  display: flex;
-  gap: 0.75rem;
-  justify-content: center;
-}
-
-.number-btn {
-  flex: 1;
-  padding: 1.2rem 0;
-  font-size: 1.6rem;
+/* The emailed code is typed, not picked from a shortlist — see
+   backend/src/utils/challenge.js for why. */
+.code-input {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.9rem;
   font-weight: 700;
   font-family: 'Playfair Display', serif;
+  letter-spacing: 0.4em;
+  text-indent: 0.4em; /* keeps the glyphs centred despite the tracking */
+  text-align: center;
   color: #1c1c1c;
   background: #fff;
   border: 1px solid #d8cfc4;
   border-radius: 6px;
-  cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.number-btn:hover:not(:disabled) { border-color: #c4a882; background: #faf6f0; }
-.number-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.code-input::placeholder { color: #d5ccc2; font-weight: 400; }
+
+.code-input:focus {
+  outline: none;
+  border-color: #c4a882;
+  box-shadow: 0 0 0 3px rgba(196, 168, 130, 0.18);
+}
 
 /* ── Responsive ── */
 /* Matches Site.css's own .polaroid breakpoint (820px, where the frame
