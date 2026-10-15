@@ -17,6 +17,7 @@ if (process.env.NODE_ENV !== 'production') require('dns').setServers(['8.8.8.8',
 const mongoose = require('mongoose');
 const Admin = require('../src/models/Admin');
 const Booking = require('../src/models/Booking');
+require('../src/models/Service'); // registered so .populate('serviceId') can resolve
 
 const apply = process.argv.includes('--apply');
 

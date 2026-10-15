@@ -29,7 +29,7 @@ const getSchedule = async (req, res) => {
     const { period = 'today', date } = req.query;
     const [start, end] = rangeForPeriod(period, date);
     const bookings = await Booking.find({
-      ...ownBookingsFilter(req.user.id),
+      ...(await ownBookingsFilter(req.user.id)),
       date: { $gte: start, $lte: end },
       status: { $in: ['pending', 'confirmed', 'completed'] },
     }).populate('customerId serviceId').sort('date time');
@@ -52,7 +52,7 @@ const getSchedule = async (req, res) => {
 // Booking history — most recently completed appointments.
 const getHistory = async (req, res) => {
   try {
-    const bookings = await Booking.find({ ...ownBookingsFilter(req.user.id), status: 'completed' })
+    const bookings = await Booking.find({ ...(await ownBookingsFilter(req.user.id)), status: 'completed' })
       .populate('customerId serviceId')
       .sort('-date -time')
       .limit(10);
@@ -75,7 +75,7 @@ const getHistory = async (req, res) => {
 // only money that actually moved through the app — not the service price.
 const getCancelledAwaitingRefund = async (req, res) => {
   try {
-    const bookings = await Booking.find({ ...ownBookingsFilter(req.user.id), status: 'cancelled' })
+    const bookings = await Booking.find({ ...(await ownBookingsFilter(req.user.id)), status: 'cancelled' })
       .populate('customerId serviceId')
       .sort('-updatedAt');
     const groupIds = [...new Set(bookings.map(b => b.groupId.toString()))];

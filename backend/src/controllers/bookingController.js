@@ -309,7 +309,7 @@ const cancelBookingGroup = async (req, res) => {
 
 const getAllBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find(ownBookingsFilter(req.user.id)).populate('customerId serviceId');
+    const bookings = await Booking.find(await ownBookingsFilter(req.user.id)).populate('customerId serviceId');
     res.json(bookings);
   } catch (err) {
     res.status(500).json({ message: err.message });
