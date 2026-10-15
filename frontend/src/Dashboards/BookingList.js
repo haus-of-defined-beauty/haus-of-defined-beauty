@@ -15,6 +15,19 @@ const STATUS_OPTIONS = ['pending', 'confirmed', 'cancelled', 'completed', 'no-sh
 
 const CANCELLATION_WINDOW_HOURS = 24;
 
+// A start time on its own doesn't say how much of the day an appointment
+// takes — two 09:00 bookings read identically whether one is a 30-minute lash
+// fill or a two-hour set. The service's duration turns it into a range.
+function timeRange(booking) {
+  const start = booking.time;
+  const duration = booking.serviceId?.duration;
+  if (!start || !duration) return start || '—';
+  const [h, m] = start.split(':').map(Number);
+  const total = h * 60 + m + duration;
+  const end = `${String(Math.floor(total / 60) % 24).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+  return `${start} - ${end}`;
+}
+
 // Matches the server's rule (bookingController): cancelling inside the window
 // is allowed but costs the booking fee, so the customer is told which it is
 // before they commit rather than after.
@@ -122,7 +135,7 @@ function BookingList({ isAdmin }) {
               {isAdmin && <td data-label="Customer">{b.customerId?.name || '—'}</td>}
               <td data-label="Service">{b.serviceId?.name || '—'}</td>
               <td data-label="Date">{new Date(b.date).toLocaleDateString('en-ZA')}</td>
-              <td data-label="Time">{b.time}</td>
+              <td data-label="Time">{timeRange(b)}</td>
               <td data-label="Status">
                 {isAdmin ? (
                   <select
