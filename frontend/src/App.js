@@ -9,6 +9,7 @@ import Signup from './Signup';
 import AdminDashboard from './Dashboards/Admin';
 import CustomerDashboard from './Dashboards/Customer';
 import BookingWizard from './Pages/BookingWizard';
+import RequireRole from './RequireRole';
 import './App.css';
 
 function App() {
@@ -21,12 +22,12 @@ function App() {
         <Route path="/masterclasses" element={<Masterclasses />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin" element={<RequireRole role="admin"><AdminDashboard /></RequireRole>} />
         {/* Calendar is now the "Calendar" tab inside /admin (see Admin.js) —
             this keeps any old bookmarks/links working. */}
         <Route path="/admin/calendar" element={<Navigate to="/admin" replace />} />
-        <Route path="/customer" element={<CustomerDashboard />} />
-        <Route path="/customer/book" element={<BookingWizard />} />
+        <Route path="/customer" element={<RequireRole role="customer"><CustomerDashboard /></RequireRole>} />
+        <Route path="/customer/book" element={<RequireRole role="customer"><BookingWizard /></RequireRole>} />
       </Routes>
     </Router>
   );

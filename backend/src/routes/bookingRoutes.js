@@ -9,7 +9,7 @@ const {
   cancelBookingGroup,
   getAllBookings,
 } = require('../controllers/bookingController');
-const { protect, adminOnly } = require('../middleware/auth');
+const { protect, adminOnly, customerOnly } = require('../middleware/auth');
 const Service = require('../models/Service');
 
 router.get('/services', protect, async (req, res) => {
@@ -21,8 +21,8 @@ router.get('/services', protect, async (req, res) => {
   }
 });
 
-router.post('/', protect, createBooking);
-router.get('/my', protect, getMyBookings);
+router.post('/', protect, customerOnly, createBooking);
+router.get('/my', protect, customerOnly, getMyBookings);
 router.put('/:id', protect, adminOnly, updateBooking);
 router.put('/:id/reschedule', protect, rescheduleBooking);
 router.patch('/:id/cancel', protect, cancelBooking);
