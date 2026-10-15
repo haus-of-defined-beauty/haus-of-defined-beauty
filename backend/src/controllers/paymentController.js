@@ -20,6 +20,18 @@ const initiatePayment = async (req, res) => {
     const bookings = await Booking.find({ groupId, customerId: req.user.id });
     if (!bookings.length) return res.status(404).json({ message: 'Booking not found' });
 
+    // PayFast confirms a payment out of band, so the customer can be back on
+    // the page before the confirmation lands. Without this they are shown
+    // "Pay Now" again for a booking they have already paid for, and a second
+    // click charges them twice.
+    const settled = await Payment.findOne({ groupId, status: 'successful' });
+    if (settled) {
+      return res.status(409).json({
+        code: 'ALREADY_PAID',
+        message: 'This booking fee has already been paid.',
+      });
+    }
+
     const payment = await Payment.create({
       groupId,
       customerId: req.user.id,
@@ -145,7 +157,10 @@ const getPaymentStatus = async (req, res) => {
     const bookings = await Booking.find({ groupId, customerId: req.user.id });
     if (!bookings.length) return res.status(404).json({ message: 'Booking not found' });
 
-    const payment = await Payment.findOne({ groupId }).sort({ createdAt: -1 });
+    // A group can carry several attempts. A successful one settles it,
+    // whatever was tried afterwards, so it's the one to report.
+    const payment = await Payment.findOne({ groupId, status: 'successful' })
+      || await Payment.findOne({ groupId }).sort({ createdAt: -1 });
     res.json({
       payment,
       bookingStatus: bookings[0]?.status,

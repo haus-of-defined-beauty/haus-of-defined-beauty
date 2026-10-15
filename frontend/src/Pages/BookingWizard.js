@@ -120,21 +120,38 @@ export default function BookingWizard() {
       return;
     }
 
-    if (paymentParam === 'return') {
-      setPolling(true);
-      let attempts = 0;
-      const poll = () => {
-        axios.get(`/api/payments/group/${groupIdParam}`).then(res => {
-          const status = res.data.payment?.status;
-          if (status === 'successful') { setPaymentResult('success'); setPolling(false); }
-          else if (status === 'failed') { setPaymentResult('failed'); setPolling(false); }
-          else if (attempts < 5) { attempts += 1; setTimeout(poll, 2000); }
-          else { setPolling(false); }
-        }).catch(() => setPolling(false));
-      };
-      poll();
-    }
+    if (paymentParam === 'return') pollForOutcome(groupIdParam);
   }, []);
+
+  // PayFast tells our server the payment went through out of band, which can
+  // land a good while after the customer is already back on this page. The
+  // first version gave up after ten seconds and then showed the "Pay Now"
+  // card again — so a paid booking looked unpaid, and paying again would
+  // have charged twice. It now waits a couple of minutes, and says it is
+  // still waiting rather than pretending nothing happened.
+  function pollForOutcome(id, { fresh = true } = {}) {
+    if (fresh) setPaymentResult(null);
+    setPolling(true);
+    let attempts = 0;
+    const poll = () => {
+      axios.get(`/api/payments/group/${id}`).then(res => {
+        const status = res.data.payment?.status;
+        // A confirmed booking means the gateway's notice arrived and was
+        // acted on, whatever the latest payment attempt happens to say.
+        if (status === 'successful' || res.data.bookingStatus === 'confirmed') {
+          setPaymentResult('success'); setPolling(false);
+        } else if (status === 'failed') {
+          setPaymentResult('failed'); setPolling(false);
+        } else if (attempts < 24) {
+          attempts += 1;
+          setTimeout(poll, attempts < 6 ? 2000 : 5000);
+        } else {
+          setPaymentResult('unconfirmed'); setPolling(false);
+        }
+      }).catch(() => { setPaymentResult('unconfirmed'); setPolling(false); });
+    };
+    poll();
+  }
 
   function weekLabel() {
     const end = new Date(weekStart);
@@ -252,6 +269,10 @@ export default function BookingWizard() {
       // browser navigates away to PayFast here — no need to reset `paying`
     } catch (err) {
       setPaying(false);
+      if (err.response?.data?.code === 'ALREADY_PAID') {
+        setPaymentResult('success');
+        return;
+      }
       setCreateError(err.response?.data?.message || 'Could not start payment.');
     }
   }
@@ -426,6 +447,29 @@ export default function BookingWizard() {
           <p>Your booking is confirmed. See you soon!</p>
           <div className="bw-confirm-btns">
             <button className="bw-btn-dark" onClick={() => navigate('/customer')}>Done</button>
+          </div>
+        </div>
+      );
+    }
+
+    // Paid, as far as the customer is concerned, but our side hasn't had the
+    // gateway's confirmation yet. Offering "Pay Now" here would risk a second
+    // charge, so this only offers to look again.
+    if (paymentResult === 'unconfirmed') {
+      return (
+        <div className="bw-confirm-card">
+          <div className="bw-confirm-top">
+            <h2 className="bw-confirm-title">Still confirming your payment</h2>
+          </div>
+          <p>
+            Your booking is being held. If you completed the payment, it can take a few
+            minutes for our confirmation to arrive — you'll get an email as soon as it does.
+          </p>
+          <div className="bw-confirm-btns">
+            <button className="bw-btn-outline" onClick={() => navigate('/customer')}>My Bookings</button>
+            <button className="bw-btn-dark" onClick={() => pollForOutcome(groupId, { fresh: false })}>
+              Check again
+            </button>
           </div>
         </div>
       );
