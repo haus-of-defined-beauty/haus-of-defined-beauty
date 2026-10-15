@@ -215,7 +215,7 @@ function renderReportBody(key, data) {
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title="Weekly Breakdown of the Month's Bookings" subtitle="Booked, rescheduled, and cancelled counts per week" dateRange={dateRange} empty={!total}>
+        <ChartCard title="Breakdown of the Period's Bookings" subtitle="Booked, rescheduled, and cancelled counts across the period" dateRange={dateRange} empty={!total}>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={data.weekly} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
               <CartesianGrid vertical={false} stroke={INK.grid} />
@@ -300,6 +300,50 @@ function renderReportBody(key, data) {
   return { columns: [], charts: null };
 }
 
+// ── Report period ──
+// Every report defaults to last calendar month (what the spec asks for), but
+// the admin can narrow or widen it — a month is no use for judging a quiet
+// week or a whole season. `from`/`to` are inclusive calendar days.
+const isoDay = d => {
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+};
+
+const RANGE_PRESETS = [
+  {
+    key: 'lastMonth',
+    label: 'Last month',
+    range: () => {
+      const n = new Date();
+      return { from: new Date(n.getFullYear(), n.getMonth() - 1, 1), to: new Date(n.getFullYear(), n.getMonth(), 0) };
+    },
+  },
+  {
+    key: 'thisMonth',
+    label: 'This month',
+    range: () => {
+      const n = new Date();
+      return { from: new Date(n.getFullYear(), n.getMonth(), 1), to: n };
+    },
+  },
+  {
+    key: 'last3Months',
+    label: 'Last 3 months',
+    range: () => {
+      const n = new Date();
+      return { from: new Date(n.getFullYear(), n.getMonth() - 2, 1), to: n };
+    },
+  },
+  {
+    key: 'thisYear',
+    label: 'This year',
+    range: () => {
+      const n = new Date();
+      return { from: new Date(n.getFullYear(), 0, 1), to: n };
+    },
+  },
+];
+
 function Reports() {
   const [activeReport, setActiveReport] = useState(null);
   const [data, setData] = useState(null);
@@ -307,22 +351,51 @@ function Reports() {
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState('');
 
-  const loadReport = (report) => {
+  const [preset, setPreset] = useState('lastMonth');
+  const initialRange = RANGE_PRESETS[0].range();
+  const [from, setFrom] = useState(isoDay(initialRange.from));
+  const [to, setTo] = useState(isoDay(initialRange.to));
+
+  const rangeInvalid = !from || !to || from > to;
+  const rangeParams = rangeInvalid ? {} : { from, to };
+
+  const applyPreset = (key) => {
+    setPreset(key);
+    const chosen = RANGE_PRESETS.find(p => p.key === key);
+    if (!chosen) return;
+    const { from: f, to: t } = chosen.range();
+    setFrom(isoDay(f));
+    setTo(isoDay(t));
+    if (activeReport) fetchReport(activeReport, { from: isoDay(f), to: isoDay(t) });
+  };
+
+  // Changing a date by hand is no longer any of the presets.
+  const setCustomDate = (which, value) => {
+    setPreset('custom');
+    if (which === 'from') setFrom(value); else setTo(value);
+  };
+
+  const fetchReport = (report, params) => {
     setActiveReport(report);
     setData(null);
     setError('');
     setLoading(true);
-    axios.get(report.endpoint)
+    axios.get(report.endpoint, { params })
       .then(res => setData(res.data))
       .catch(() => setError('Failed to load report.'))
       .finally(() => setLoading(false));
   };
 
+  const loadReport = report => fetchReport(report, rangeParams);
+
   const downloadPdf = async () => {
     if (!activeReport) return;
     setDownloading(true);
     try {
-      const res = await axios.get(activeReport.endpoint, { params: { format: 'pdf' }, responseType: 'blob' });
+      const res = await axios.get(activeReport.endpoint, {
+        params: { ...rangeParams, format: 'pdf' },
+        responseType: 'blob',
+      });
       const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
       const link = document.createElement('a');
       link.href = url;
@@ -351,6 +424,38 @@ function Reports() {
             {r.label}
           </button>
         ))}
+      </div>
+
+      <div className="report-range">
+        <div className="report-range-presets">
+          {RANGE_PRESETS.map(p => (
+            <button
+              key={p.key}
+              className={`range-preset ${preset === p.key ? 'active' : ''}`}
+              onClick={() => applyPreset(p.key)}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+        <div className="report-range-dates">
+          <label>
+            From
+            <input type="date" value={from} max={to || undefined} onChange={e => setCustomDate('from', e.target.value)} />
+          </label>
+          <label>
+            To
+            <input type="date" value={to} min={from || undefined} onChange={e => setCustomDate('to', e.target.value)} />
+          </label>
+          <button
+            className="range-apply"
+            disabled={!activeReport || rangeInvalid || loading}
+            onClick={() => fetchReport(activeReport, rangeParams)}
+          >
+            Apply
+          </button>
+        </div>
+        {rangeInvalid && <p className="range-warning">Pick a start date on or before the end date.</p>}
       </div>
 
       <div className="report-output">

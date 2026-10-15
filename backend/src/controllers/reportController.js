@@ -1,5 +1,8 @@
 const Booking = require('../models/Booking');
 const renderReportPdf = require('../utils/pdfReport');
+const { MONTH_NAMES, describePeriod, rangeFromQuery } = require('../utils/reportRange');
+
+const periodTitle = (title, period) => `${title} — ${period.label} (${period.startFormatted} – ${period.endFormatted})`;
 
 const CATEGORY_GROUPS = { hair: 'Hair', nails: 'Nails', makeup: 'Makeup & Lashes', lashes: 'Makeup & Lashes' };
 const CATEGORIES = ['Hair', 'Nails', 'Makeup & Lashes'];
@@ -26,32 +29,28 @@ function timeSlotLabel(time) {
 
 const shortId = id => `B${id.toString().slice(-5).toUpperCase()}`;
 
-const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-const fmtDMY = d => {
-  const dt = new Date(d);
-  return `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()}`;
-};
-// Report period, driven by real query bounds rather than hardcoded text —
-// stays correct as months roll over. `start` is inclusive; the report
-// itself never runs past "the end of last month" so there is no exclusive
-// upper bound to reason about here.
-const monthPeriod = start => {
-  const endInclusive = new Date(start.getFullYear(), start.getMonth() + 1, 0);
-  return {
-    label: `${MONTH_NAMES[start.getMonth()]} ${start.getFullYear()}`,
-    startFormatted: fmtDMY(start),
-    endFormatted: fmtDMY(endInclusive),
-  };
-};
-const periodTitle = (title, period) => `${title} — ${period.label} (${period.startFormatted} – ${period.endFormatted})`;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const WEEKLY_BUCKET_LIMIT = 10; // more bars than this and weeks stop being readable
 
-// Every report in the spec is monthly — "last calendar month", relative to
-// whenever the report happens to be run. `end` is exclusive.
-function lastMonthRange() {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const end = new Date(now.getFullYear(), now.getMonth(), 1);
-  return { start, end };
+// Labels for the status breakdown, and the bucket a given date belongs to.
+// Over a single calendar month this gives the same "Week 1…5" it always did.
+function statusBuckets(start, end) {
+  const spanDays = Math.ceil((end - start) / DAY_MS);
+  const weeks = Math.max(1, Math.ceil(spanDays / 7));
+
+  if (weeks <= WEEKLY_BUCKET_LIMIT) {
+    return {
+      bucketLabel: date => `Week ${Math.floor((new Date(date) - start) / (7 * DAY_MS)) + 1}`,
+      bucketLabels: Array.from({ length: weeks }, (_, i) => `Week ${i + 1}`),
+    };
+  }
+
+  const monthLabel = d => `${MONTH_NAMES[d.getMonth()].slice(0, 3)} ${d.getFullYear()}`;
+  const labels = [];
+  for (let d = new Date(start.getFullYear(), start.getMonth(), 1); d < end; d.setMonth(d.getMonth() + 1)) {
+    labels.push(monthLabel(d));
+  }
+  return { bucketLabel: date => monthLabel(new Date(date)), bucketLabels: labels };
 }
 
 // ── Report 4: Returning and New Customers ──────────────────────────────
@@ -60,8 +59,8 @@ function lastMonthRange() {
 // returning even if this happens to be their only booking this month.
 // Read from real Booking records rather than Customer.bookingHistory, which
 // nothing in the app ever writes to.
-async function getNewReturningData() {
-  const { start, end } = lastMonthRange();
+async function getNewReturningData(range) {
+  const { start, end } = range;
 
   const allBookings = await Booking.find({ status: { $in: ['confirmed', 'completed'] } })
     .select('customerId date');
@@ -114,12 +113,12 @@ async function getNewReturningData() {
   });
 
   const byCategory = CATEGORIES.map(c => categoryMap[c] || { category: c, New: 0, Returning: 0 });
-  return { overall, byCategory, period: monthPeriod(start), details: details.slice(0, 25) };
+  return { overall, byCategory, period: describePeriod(start, end), details: details.slice(0, 25) };
 }
 
 const newAndReturningCustomers = async (req, res) => {
   try {
-    const data = await getNewReturningData();
+    const data = await getNewReturningData(rangeFromQuery(req.query));
     if (req.query.format === 'pdf') {
       return renderReportPdf(res, 'new-vs-returning-customers.pdf', periodTitle('Returning and New Customers Report', data.period), [
         { heading: 'Overall', rows: [
@@ -140,8 +139,8 @@ const newAndReturningCustomers = async (req, res) => {
 // Counts confirmed+completed bookings (not just 'completed' — nothing in
 // the app ever marks a booking completed, so that always returned empty).
 // Combinations are pairs of services sharing a cart (groupId).
-async function getTopServicesData() {
-  const { start, end } = lastMonthRange();
+async function getTopServicesData(range) {
+  const { start, end } = range;
   const bookings = await Booking.find({
     status: { $in: ['confirmed', 'completed'] },
     date: { $gte: start, $lt: end },
@@ -191,12 +190,12 @@ async function getTopServicesData() {
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
 
-  return { topServices, topCombinations, period: monthPeriod(start), details: details.slice(0, 25) };
+  return { topServices, topCombinations, period: describePeriod(start, end), details: details.slice(0, 25) };
 }
 
 const topServices = async (req, res) => {
   try {
-    const data = await getTopServicesData();
+    const data = await getTopServicesData(rangeFromQuery(req.query));
     if (req.query.format === 'pdf') {
       return renderReportPdf(res, 'top-services.pdf', periodTitle('Top Ranked Services Report', data.period), [
         { heading: 'Top Services', rows: data.topServices.map(s =>
@@ -215,8 +214,8 @@ const topServices = async (req, res) => {
 // Filters by appointment date rather than createdAt — this report is about
 // what happened during that month's appointments, not when they were booked.
 // Buckets are mutually exclusive so they sum to the total.
-async function getMonthlyStatusData() {
-  const { start, end } = lastMonthRange();
+async function getMonthlyStatusData(range) {
+  const { start, end } = range;
   const bookings = await Booking.find({ date: { $gte: start, $lt: end } })
     .populate('serviceId customerId')
     .sort('date time');
@@ -228,6 +227,10 @@ async function getMonthlyStatusData() {
     return 'Booked';
   };
 
+  // The breakdown runs in weeks from the start of the range, except over a
+  // long range where 30-odd weekly bars say nothing — then it runs in months.
+  const { bucketLabel, bucketLabels } = statusBuckets(start, end);
+
   const overall = { Booked: 0, Rescheduled: 0, Cancelled: 0, 'No-show': 0 };
   const weeklyMap = {};
   const categoryMap = {};
@@ -237,7 +240,7 @@ async function getMonthlyStatusData() {
     const bucket = statusOf(b);
     overall[bucket] += 1;
 
-    const weekLabel = `Week ${Math.floor((new Date(b.date).getUTCDate() - 1) / 7) + 1}`;
+    const weekLabel = bucketLabel(b.date);
     if (!weeklyMap[weekLabel]) weeklyMap[weekLabel] = { week: weekLabel, Booked: 0, Rescheduled: 0, Cancelled: 0 };
     if (bucket !== 'No-show') weeklyMap[weekLabel][bucket] += 1;
 
@@ -258,20 +261,16 @@ async function getMonthlyStatusData() {
     });
   });
 
-  const daysInMonth = new Date(start.getFullYear(), start.getMonth() + 1, 0).getDate();
-  const totalWeeks = Math.ceil(daysInMonth / 7);
-  const weekly = Array.from({ length: totalWeeks }, (_, i) => {
-    const label = `Week ${i + 1}`;
-    return weeklyMap[label] || { week: label, Booked: 0, Rescheduled: 0, Cancelled: 0 };
-  });
+  const weekly = bucketLabels.map(label =>
+    weeklyMap[label] || { week: label, Booked: 0, Rescheduled: 0, Cancelled: 0 });
   const byCategory = CATEGORIES.map(c => categoryMap[c] || { category: c, Booked: 0, Rescheduled: 0, Cancelled: 0 });
 
-  return { overall, weekly, byCategory, period: monthPeriod(start), details: details.slice(0, 25) };
+  return { overall, weekly, byCategory, period: describePeriod(start, end), details: details.slice(0, 25) };
 }
 
 const monthlyBookingStatus = async (req, res) => {
   try {
-    const data = await getMonthlyStatusData();
+    const data = await getMonthlyStatusData(rangeFromQuery(req.query));
     if (req.query.format === 'pdf') {
       return renderReportPdf(res, 'monthly-booking-status.pdf', periodTitle('Monthly Booking Status Report', data.period), [
         { heading: 'Overall', rows: Object.entries(data.overall).map(([label, value]) => ({ label, value })) },
@@ -292,8 +291,8 @@ const monthlyBookingStatus = async (req, res) => {
 // time slot (line), by weekday + category (clustered bar), and by weekday
 // + time slot (stacked column). Masterclass bookings are excluded — not
 // one of the three categories the report tracks.
-async function getPeakBookingTimesData() {
-  const { start, end } = lastMonthRange();
+async function getPeakBookingTimesData(range) {
+  const { start, end } = range;
   const bookings = await Booking.find({
     status: { $in: ['confirmed', 'completed'] },
     date: { $gte: start, $lt: end },
@@ -344,12 +343,12 @@ async function getPeakBookingTimesData() {
     return row;
   });
 
-  return { byTimeSlot, byDayAndCategory, byDayAndTimeSlot, period: monthPeriod(start), details: details.slice(0, 25) };
+  return { byTimeSlot, byDayAndCategory, byDayAndTimeSlot, period: describePeriod(start, end), details: details.slice(0, 25) };
 }
 
 const peakBookingTimes = async (req, res) => {
   try {
-    const data = await getPeakBookingTimesData();
+    const data = await getPeakBookingTimesData(rangeFromQuery(req.query));
     if (req.query.format === 'pdf') {
       return renderReportPdf(res, 'peak-booking-times.pdf', periodTitle('Peak Booking Times Report', data.period), [
         { heading: 'By Time Slot', rows: data.byTimeSlot.flatMap(r => CATEGORIES
