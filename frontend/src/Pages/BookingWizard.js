@@ -164,15 +164,23 @@ export default function BookingWizard() {
     const idx = cart.findIndex(c => c.service._id === activeService._id);
     if (idx >= 0) { const u = [...cart]; u[idx] = entry; setCart(u); }
     else setCart(c => [...c, entry]);
-    setActiveService(null);
+    // The service stays selected. Clearing it used to drop the ?serviceId
+    // from the next calendar request, so the list fell back to the whole
+    // salon's raw day: both artists' hours, out of order, with no end times.
   }
 
   function removeItem(i) { setCart(c => c.filter((_, j) => j !== i)); }
   function editItem(item) { setActiveService(item.service); setShowSlots(true); }
 
+  // Picked = the service being chosen now already sits at this time. Matching
+  // any basket item instead marked a clashing slot as "picked", which skipped
+  // the clash check below and let two services be booked over each other.
   function inCart(time) {
     const iso = isoDate(selectedDay);
-    return cart.some(c => c.time === time && c.isoDate === iso);
+    return cart.some(c =>
+      c.time === time &&
+      c.isoDate === iso &&
+      (!activeService || c.service._id === activeService._id));
   }
 
   const toMins = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
@@ -345,7 +353,10 @@ export default function BookingWizard() {
                 {daySlots.filter(s => s.status === 'available').map(slot => {
                   const picked = inCart(slot.start);
                   const clashes = !picked && clashesWithCart(slot.start);
-                  const end = activeService ? addMins(slot.start, activeService.duration) : '';
+                  // The server sends the appointment's own end for the chosen
+                  // service; only times it can actually run to the end of are
+                  // offered at all.
+                  const end = slot.end || (activeService ? addMins(slot.start, activeService.duration) : '');
                   return (
                     <div key={slot._id}
                       className={`bw-slot${picked ? ' picked' : ''}${clashes ? ' taken' : ''}`}
