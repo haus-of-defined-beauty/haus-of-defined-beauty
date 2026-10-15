@@ -1,8 +1,14 @@
 const Calendar = require('../models/Calendar');
 const Service = require('../models/Service');
-const { getOrCreateDay, toMin, OPEN_HOUR, CLOSE_HOUR } = require('../utils/calendarSlots');
+const { getOrCreateDay, findCoveredSlots, splitRange, toMin, OPEN_HOUR, CLOSE_HOUR } = require('../utils/calendarSlots');
 const { appointmentInstant } = require('../utils/appointmentTime');
 const { adminIdsForCategory } = require('../utils/serviceAdmins');
+
+const pad = n => String(n).padStart(2, '0');
+const addMinutes = (time, mins) => {
+  const total = toMin(time) + mins;
+  return `${pad(Math.floor(total / 60))}:${pad(total % 60)}`;
+};
 
 const getCalendar = async (req, res) => {
   try {
@@ -27,31 +33,43 @@ const getCalendarByDate = async (req, res) => {
 
     if (req.query.serviceId) {
       const service = await Service.findById(req.query.serviceId);
+      const duration = service?.duration || 0;
       const allowed = (await adminIdsForCategory(service?.category)).map(String);
-      // Slots with no owner predate per-admin availability, so they stay
-      // bookable for anything rather than vanishing from existing days.
-      slots = slots.filter(s => !s.adminId || allowed.includes(String(s.adminId)));
-
-      // Both artists can be open at the same hour. The customer only needs to
-      // know the salon is free then, so show one entry per time — and prefer
-      // a free one, since the hour is still bookable if either is free.
-      const byTime = new Map();
-      for (const s of slots) {
-        const seen = byTime.get(s.start);
-        if (!seen || (seen.status !== 'available' && s.status === 'available')) byTime.set(s.start, s);
-      }
-      slots = [...byTime.values()];
 
       // Bookings need a day's notice, so today and anything already past is
       // never offered — showing them only invites an error at the last step.
       const earliest = new Date();
       earliest.setHours(0, 0, 0, 0);
       earliest.setDate(earliest.getDate() + 1);
-      if (new Date(req.params.date) < earliest) slots = [];
 
-      slots = slots
-        .filter(s => s.status === 'available')
-        .sort((a, b) => toMin(a.start) - toMin(b.start));
+      if (new Date(req.params.date) < earliest) {
+        slots = [];
+      } else {
+        // Every distinct time one of this service's artists has open. Both of
+        // them can be free at the same hour; the customer only needs to know
+        // the salon is free then, so it appears once.
+        const starts = [...new Set(
+          day.slots
+            .filter(s => s.status === 'available' && (!s.adminId || allowed.includes(String(s.adminId))))
+            .map(s => s.start)
+        )];
+
+        // A start is only offered if one artist's own availability runs
+        // unbroken for the whole service. Offering a bare opening hour
+        // instead put times on the page that could never be booked: a 2hr
+        // service showed 16:00–18:00 although the salon shuts at 17:00, and
+        // the error only appeared at the last step.
+        slots = starts
+          .map(start => findCoveredSlots(day, start, duration, allowed))
+          .filter(Boolean)
+          .map(covered => ({
+            ...covered[0].toObject(),
+            // The appointment's own end, not the opening hour's — this is
+            // what the page shows the customer.
+            end: addMinutes(covered[0].start, duration),
+          }))
+          .sort((a, b) => toMin(a.start) - toMin(b.start));
+      }
     }
 
     if (req.query.mine === '1' && req.user?.role === 'admin') {
@@ -101,7 +119,11 @@ const addSlot = async (req, res) => {
       return res.status(409).json({ message: 'This time overlaps one of your existing slots — remove or adjust it first.' });
     }
 
-    day.slots.push({ start, end, status: 'available', adminId: req.user.id });
+    // Stored as hourly units rather than one long block, so every hour of it
+    // is a time a customer can start an appointment.
+    for (const unit of splitRange(start, end)) {
+      day.slots.push({ ...unit, status: 'available', adminId: req.user.id });
+    }
     await day.save();
     res.status(201).json(day);
   } catch (err) {

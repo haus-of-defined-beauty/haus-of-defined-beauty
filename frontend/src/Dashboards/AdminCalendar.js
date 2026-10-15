@@ -187,8 +187,12 @@ export default function AdminCalendar() {
   // The times an admin may actually open, so invalid ones are never
   // selectable in the first place. A slot has to sit inside business hours,
   // start later than now, and not land on one of their existing slots.
+  // The grid's last row is 17:00 so a slot ending at closing time still has a
+  // line to sit on — but the salon shuts at 17:00, so nothing may start at or
+  // run past it. Deriving closing from the grid offered 17:00–18:00, which
+  // the server then refused.
   const OPEN_MIN = HOURS[0] * 60;
-  const CLOSE_MIN = (HOURS[HOURS.length - 1] + 1) * 60;
+  const CLOSE_MIN = HOURS[HOURS.length - 1] * 60;
   const toMins = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
   const label = m => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
 

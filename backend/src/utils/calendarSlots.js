@@ -25,6 +25,21 @@ function defaultSlotsFor(dateObj, adminIds) {
   return slots;
 }
 
+// Splits an open range into bookable units on the same hourly rhythm as the
+// opening-hours template, with any remainder as a shorter final unit.
+//
+// An artist's availability is offered to customers from the start of each
+// unit, so a single three-hour block was one bookable appointment and the
+// rest of the morning couldn't be reached at all. Three one-hour units give
+// three start times for the same open hours.
+function splitRange(start, end) {
+  const units = [];
+  for (let m = toMin(start); m < toMin(end); m += SLOT_MINUTES) {
+    units.push({ start: toTime(m), end: toTime(Math.min(m + SLOT_MINUTES, toMin(end))) });
+  }
+  return units;
+}
+
 // Finds the Calendar day for a date, laying out the opening-hours template
 // for each artist the first time anyone touches it — so the salon has
 // availability without anyone having to build a calendar by hand.
@@ -135,6 +150,7 @@ async function releaseSlot(date, bookingId) {
 
 module.exports = {
   getOrCreateDay,
+  splitRange,
   findCoveredSlots,
   reserveSlot,
   releaseSlot,
