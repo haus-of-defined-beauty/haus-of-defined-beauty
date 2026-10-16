@@ -12,12 +12,17 @@ const ADDRESS_QUERY = '764 4th Avenue, Melville, Johannesburg, 2092';
 const MAP_EMBED = `https://www.google.com/maps?q=${encodeURIComponent(ADDRESS_QUERY)}&output=embed`;
 const MAP_LINK = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ADDRESS_QUERY)}`;
 
-// Photo still a placeholder — swap in a real one when you have it.
+// Photos are still placeholders — swap in real ones when you have them.
 const TEAM = [
   {
     name: 'Kgodisho Makwala',
     role: 'Founder',
     text: 'Kgodisho founded Haus of Defined Beauty to bring salon-quality nail, hair, makeup and lash services to Melville — built around precise, personalised work for every client who sits in the chair.',
+  },
+  {
+    name: 'Pretty Co',
+    role: 'Partner',
+    text: 'Pretty Co partners with Kgodisho in running Haus of Defined Beauty, sharing the chair and the standard the studio is built on.',
   },
 ];
 
@@ -75,7 +80,7 @@ function About() {
         </div>
 
         <section className="about-team">
-          <h2>Meet the Founder</h2>
+          <h2>Meet the Team</h2>
           {TEAM.map((m, i) => (
             <article key={i} className={`team-row ${i % 2 ? 'flip' : ''}`}>
               <div className="team-photo"><Placeholder /></div>
