@@ -2,12 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import SiteNav from './SiteNav';
 import SiteFooter from './SiteFooter';
-import Placeholder from './Placeholder';
 import { bookNowPath } from './siteAuth';
 import nailsPhoto from '../assets/services/nails.jpg';
 import hairPhoto from '../assets/services/hair.jpg';
 import makeupPhoto from '../assets/home/service-makeup.jpg';
+import pfNailsFloral from '../assets/portfolio/nails-floral.jpg';
+import pfHairBob from '../assets/portfolio/hair-bob.jpg';
+import pfMakeupGlam from '../assets/portfolio/makeup-glam.jpg';
+import pfLashes from '../assets/portfolio/lashes-brows.jpg';
+import pfNailsRed from '../assets/portfolio/nails-red.jpg';
+import pfHairStraight from '../assets/portfolio/hair-straight.jpg';
 import './Services.css';
+
+// Real work from the salon's own Instagram, two per service line so the
+// portfolio speaks for all four rather than only the nail sets.
+const PORTFOLIO = [
+  { img: pfNailsFloral, alt: 'Stiletto nails with white tips and hand-painted pink floral art' },
+  { img: pfHairBob, alt: 'Client with a sleek, straight shoulder-length bob' },
+  { img: pfMakeupGlam, alt: 'Soft glam makeup with a warm eye and glossy lip' },
+  { img: pfLashes, alt: 'Close-up of lash extensions and shaped brows, with square white nails' },
+  { img: pfNailsRed, alt: 'Long square nails in a deep red ombre' },
+  { img: pfHairStraight, alt: 'Freshly installed straight hair, sleek from root to ends' },
+];
 
 const BLOCKS = [
   {
@@ -169,8 +185,11 @@ function Services() {
               View More of Our Work on Our Socials
             </a>
             <div className="pf-grid">
-              <div className="pf-tile"><Placeholder /></div>
-              <div className="pf-tile"><Placeholder /></div>
+              {PORTFOLIO.map(shot => (
+                <div key={shot.img} className="pf-tile">
+                  <img src={shot.img} alt={shot.alt} loading="lazy" />
+                </div>
+              ))}
             </div>
           </div>
         </section>

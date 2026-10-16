@@ -137,7 +137,15 @@
 }
 .pf-sub:hover { color: #fff; border-bottom-color: var(--gold); }
 
-.pf-grid { margin-top: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.75rem; }
+/* Three across, which keeps each tile close to the size the photographs
+   actually are — they come off the salon's Instagram, so blowing them up
+   larger than this only softens them. */
+.pf-grid {
+  margin-top: 2rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+}
 .pf-tile { aspect-ratio: 0.87 / 1; overflow: hidden; background: #fff; }
 .pf-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
@@ -152,5 +160,5 @@
   .svc-block.flip .svc-offer { margin: -2rem 0.75rem 0; padding: 1.6rem 1.4rem 2.9rem; }
 
   .faq-grid { grid-template-columns: 1fr; }
-  .pf-grid { grid-template-columns: 1fr; }
+  .pf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.85rem; }
 }
